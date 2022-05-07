@@ -46,7 +46,7 @@ func TestName(t *testing.T) {
 ```
 
 
-###参考文档：
+### 参考文档：
 * 数据签名和验签：https://opendocs.alipay.com/common/02kf5q
 * 支付API文档：https://opendocs.alipay.com/apis
 * 沙箱账号：https://open.alipay.com/develop/sandbox/account
