@@ -14,6 +14,13 @@ func TestName(t *testing.T) {
 }
 ```
 
+## 从证书/证书内容中加载相关的证书序列号（支付宝根证书尚未实现）
+```go
+    aliClient.LoadAppCertSN("certPath","certContent")// 加载应用公钥证书序列号SN
+    aliClient.LoadAliCertSN("certPath","certContent")// 加载支付宝公钥证书序列号SN
+    aliClient.LoadAlipayRootCertSn("certRootPath","certRootContent")// 加载支付宝根证书序列号SN
+```
+
 ## 用法
 ```go
 func TestName(t *testing.T) {
@@ -45,8 +52,36 @@ func TestName(t *testing.T) {
 }
 ```
 
+## 异步通知
+### 异步通知方法
+```go
+    aliClient.HandlerAsyncNotify(rawBody, isLifeIsNo) // 具体参数含义查看方法说明
+```
+### 异步通知示例
+```go
+    router := gin.Default()
+	router.POST("/notify", func(c *gin.Context) {
+		// 从http body中读取参数字符串
+		body, err := c.GetRawData()
+		if err != nil {
+			c.String(http.StatusInternalServerError, "fail")
+			fmt.Printf("GetRawData err:%s\n", err.Error())
+			return
+		}
+		fmt.Printf("rawBody：%s", string(body))
+		if _, err = aliClient2.HandlerAsyncNotify(string(body), false); err != nil {
+			c.String(http.StatusInternalServerError, "fail") // 输出fail，表示消息获取失败，支付宝会重新发送消息到异步地址
+			return
+		}
+		c.String(200, "success") // 输出success是表示消息获取成功，支付宝就会停止发送异步
+	})
+	router.Run(":8080")
+```
+
 
 ### 参考文档：
+* 沙箱账号：https://open.alipay.com/develop/sandbox/account
 * 数据签名和验签：https://opendocs.alipay.com/common/02kf5q
 * 支付API文档：https://opendocs.alipay.com/apis
-* 沙箱账号：https://open.alipay.com/develop/sandbox/account
+* 异步通知说明：https://opensupport.alipay.com/support/helpcenter/193/201602472200
+* 异步通知参数说明：https://opendocs.alipay.com/open/203/105286

@@ -24,9 +24,10 @@ const (
 
 	ContentType = "application/x-www-form-urlencoded;charset=utf-8"
 
-	// AlipayCertSn 支付宝公钥证书序列号
-	AlipayCertSn = "alipay_cert_sn"
-	Sign         = "sign"
+	// AlipayCertSnField 支付宝公钥证书序列号
+	AlipayCertSnField = "alipay_cert_sn"
+	SignFiled         = "sign"
+	SignTypeFiled     = "sign_type"
 
 	// SuccessCode 接口调用成功时的返回码
 	SuccessCode = "10000"

@@ -62,6 +62,48 @@ func AddEncryptKey(encryptKey string) OptionFunc {
 	}
 }
 
+// LoadAppCertSN 从应用公钥证书中加载 应用公钥证书序列号SN
+// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
+func LoadAppCertSN(certPath, certContent string) OptionFunc {
+	return func(c *AliClient) {
+		var certSN string
+		if certPath != "" {
+			certSN, _ = c.GetCertSNFromPath(certPath)
+		} else {
+			certSN, _ = c.GetCertSNFromContent(certContent)
+		}
+		c.appCertSN = certSN
+	}
+}
+
+// LoadAliCertSN 从支付宝公钥证书中加载 支付宝公钥证书序列号SN
+// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
+func LoadAliCertSN(certPath, certContent string) OptionFunc {
+	return func(c *AliClient) {
+		var certSN string
+		if certPath != "" {
+			certSN, _ = c.GetCertSNFromPath(certPath)
+		} else {
+			certSN, _ = c.GetCertSNFromContent(certContent)
+		}
+		c.aliCertSN = certSN
+	}
+}
+
+// LoadAlipayRootCertSN 从支付宝根证书书中加载 支付宝根证书序列号SN
+// certPath：从证书中提取序列号，certRootContent：从证书内容中提取序列号
+func LoadAlipayRootCertSN(certRootPath, certRootContent string) OptionFunc {
+	return func(c *AliClient) {
+		var certRootSN string
+		if certRootPath != "" {
+			certRootSN, _ = c.GetCertSNFromPath(certRootPath)
+		} else {
+			certRootSN, _ = c.GetCertSNFromContent(certRootContent)
+		}
+		c.alipayRootCertSn = certRootSN
+	}
+}
+
 // NewAliClient 初始化支付宝客户端
 func NewAliClient(appId, aliPublicKey, appPrivateKey, signType string, isProduction bool, opts ...OptionFunc) (aliClient *AliClient, err error) {
 	aliClient = &AliClient{
@@ -102,7 +144,7 @@ func NewAliClient(appId, aliPublicKey, appPrivateKey, signType string, isProduct
 // httpMethod 请求方法 GET,POST,PUT...
 // apiName 接口名
 // requestParams 请求的参数struct
-func (a *AliClient) HandlerRequest(httpMethod, apiName string,needEncrypt bool, requestDataMap map[string]interface{}, result interface{}) (err error) {
+func (a *AliClient) HandlerRequest(httpMethod, apiName string, needEncrypt bool, requestDataMap map[string]interface{}, result interface{}) (err error) {
 	var urlValues url.Values
 	urlValues, err = a.handlerParams(apiName, requestDataMap)
 	if err != nil {
@@ -132,7 +174,7 @@ func (a *AliClient) HandlerRequest(httpMethod, apiName string,needEncrypt bool, 
 	}
 
 	// 对返回结果验签
-	_, err = a.SyncVerifySign(string(data), apiName,needEncrypt)
+	_, err = a.SyncVerifySign(string(data), apiName, needEncrypt)
 	if err != nil {
 		return
 	}
@@ -217,7 +259,7 @@ func (a *AliClient) handlerParams(apiName string, requestDataMap map[string]inte
 	if err != nil {
 		return
 	}
-	requestDataMap["sign"] = signStr
+	requestDataMap[consts.SignFiled] = signStr
 
 	urlValues = url.Values{}
 	for key, value := range requestDataMap {
@@ -227,12 +269,18 @@ func (a *AliClient) handlerParams(apiName string, requestDataMap map[string]inte
 }
 
 // AsyncNotifyVerifySign 异步通知验签，公钥、公钥证书两种模式下，异步通知验签方式相同。
-// isLifeIsNo 该异步通知是否是生活号，生活号异步通知时sign_type需要参与签名
+// isLifeIsNo 该异步通知是否是生活号，生活号异步通知组成的待验签串里需要保留sign_type参数
+// 其验签步骤为：
+// 第一步：在通知返回参数列表中，除去sign、sign_type两个参数外，凡是通知返回回来的参数皆是待验签的参数。
+// 第二步：将剩下参数进行url_decode, 然后进行字典排序，组成字符串，得到待签名字符串：
+// 第三步：将签名参数（sign）使用base64解码为字节码串。
+// 第四步：使用RSA的验签方法，通过签名字符串、签名参数（经过base64解码）及支付宝公钥验证签名。
+// 第五步：在步骤四验证签名正确后，必须再严格按照如下描述校验通知数据的正确性
 func (a *AliClient) AsyncNotifyVerifySign(urlValues url.Values, isLifeIsNo bool) (result bool, err error) {
-	// 进行字典排序
+	// 除去sign、sign_type两个参数&进行字典排序
 	keys := make([]string, 0)
 	for k, _ := range urlValues {
-		if k == "sign" || !isLifeIsNo && k == "sign_type" {
+		if k == consts.SignFiled || !isLifeIsNo && k == consts.SignTypeFiled {
 			continue
 		}
 		keys = append(keys, k)
@@ -246,7 +294,7 @@ func (a *AliClient) AsyncNotifyVerifySign(urlValues url.Values, isLifeIsNo bool)
 	// 待签名字符串
 	var strParams = strings.Join(valueList, "&")
 	// 获取异步通知返回的签名和签名算法类型
-	sign, signType := urlValues.Get("sign"), urlValues.Get("sign_type")
+	sign, signType := urlValues.Get(consts.SignFiled), urlValues.Get(consts.SignTypeFiled)
 	// base64解码
 	signStr := base64.StdEncoding.EncodeToString([]byte(sign))
 	// 签名验证
@@ -333,8 +381,8 @@ func (a *AliClient) parseJsonRawData(rawData, apiName string) (resContent, sign,
 	// 将apiName转换为xxx_response格式
 	var apiNameResponse = strings.Replace(apiName, ".", "_", -1) + "_response"
 	var apiNameIndex = strings.LastIndex(rawData, apiNameResponse)
-	var signIndex = strings.LastIndex(rawData, "\""+consts.Sign+"\"")
-	var alipayCertSnIndex = strings.LastIndex(rawData, "\""+consts.AlipayCertSn+"\"") // 如果>0说明签名是公钥证书模式
+	var signIndex = strings.LastIndex(rawData, "\""+consts.SignFiled+"\"")
+	var alipayCertSnIndex = strings.LastIndex(rawData, "\""+consts.AlipayCertSnField+"\"") // 如果>0说明签名是公钥证书模式
 	var splitStartIndex, splitEndIndex int
 	if alipayCertSnIndex > 0 {
 		splitEndIndex = alipayCertSnIndex - 1
@@ -352,12 +400,12 @@ func (a *AliClient) parseJsonRawData(rawData, apiName string) (resContent, sign,
 
 	// 获取返回值中的 签名
 	if signIndex > 0 {
-		sign = rawData[signIndex+len(consts.Sign)+4:]
+		sign = rawData[signIndex+len(consts.SignFiled)+4:]
 		sign = sign[:strings.LastIndex(sign, "\"")]
 	}
 	// 获取 返回值中的 alipay_cert_sn
 	if alipayCertSnIndex > 0 {
-		alipayCertSn = rawData[alipayCertSnIndex+len(consts.AlipayCertSn)+4:]
+		alipayCertSn = rawData[alipayCertSnIndex+len(consts.AlipayCertSnField)+4:]
 		alipayCertSn = alipayCertSn[:strings.Index(alipayCertSn, "\"")]
 	}
 	return

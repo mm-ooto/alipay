@@ -33,9 +33,9 @@ type OtherRequestParams struct {
 	AppAuthToken string `json:"-" mxLength:"40" mustInput:"N"`  // 详见应用授权概述：https://opendocs.alipay.com/isv/10467/xldcyq
 }
 
-// AlipayTradeNotificationParams 异步通知响应参数
+// TradeNotificationParams 异步通知响应参数
 // 文档：https://opendocs.alipay.com/open/203/105286
-type AlipayTradeNotificationParams struct {
+type TradeNotificationParams struct {
 	AuthAppId           string `json:"auth_app_id"`           // App Id
 	NotifyTime          string `json:"notify_time"`           // 通知时间
 	NotifyType          string `json:"notify_type"`           // 通知类型

@@ -1,4 +1,4 @@
-package example
+package main
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ var aliClient *alipay.AliClient
 
 func TestMain(m *testing.M) {
 	var err error
-	aliClient, err = NewClient()
+	aliClient, err = NewAliClient()
 	if err != nil {
 		fmt.Printf("TestMain NewClient err:%s", err.Error())
 		return
@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func NewClient() (aliClient *alipay.AliClient, err error) {
+func NewAliClient() (aliClient *alipay.AliClient, err error) {
 	appId := "2016091200490539"
 	appPrivateKey := "MIIEpAIBAAKCAQEAvCqpPIlU/VM78FXnVWoO/iPbiIg/TSdZO2UmKdd+sLtVRqhy+doS08pzw/Qq5XUSL4QwVhoRShoQmGKtAAxI2YshCnk61WdHZogOlmniQlundZmflRLQgNrEnGftcuNO9xMAgwXtke1akgXDHjpkyGhl8M6yJ2cwou9wH1x2VDsW0cFVdgOT7uQD2W81CCGkPeMu5XfxKbBoKRE8OPNMsKAE2Bd6dPStmg8w3E2ZCGo8xVLH+vdSyGX30iYZHFP65WFoQt4ANJU/OgaWrIOcGdskFGTEtGeKEDoPw27LY/VD4I+2KolGalv8qcSZME+3FrmlHL+7I2ZgVKsVUHqT0QIDAQABAoIBAHmuqOSR9tkfU1qXYtMUk/97FsPTQARX1teXELfsOGx3qKzZ0AiNIrG9cWGd64OZUppRxKRZlSazdlnlLfUi/JVZ6JMKVKaedEj04WIZtQyukrt1DgLsONOrJYvzlVU/c9hJfII+eiRtNq3JdiV9I6GKCapRMFpU29nyNzLAq3DJ7PA6IGfSy/vk/r5HbxxJoomlZ1BZjhDezLn2nPXFqLQunQMeBozA/Eh/v7GZ0tZrhX/LEmq1aqfXtB+4mBX//gDMwCcvBlCLeBsVDXQOzPvCXr7qKTIFdXiQZhlopEt3RFEQb6CoQF5XSHisq3wbLxK8wTa01+0jcknJZGHYYCUCgYEA6vfKnukjge2J7ptmIegu5j+vZmbAcnKBJ1C8xrcb4VyGAFGWotUcUMTa8lKrjYXAhKnj/FeKRu19VhfIjEGEno/7zLoQz9j8QLlQAykIBoP9TTXI380K2Kns8uYdSUNCtJTE8CmqOpHJrKVcUy/lxREfv8SmHFPKD9jTC9t7ZKsCgYEAzQJvLgrp9zrYTmbAxKxXeswiJsBlMo4atlIs+R0xH3xVyWQe8Ng2GqH4BqSvXIqdthTq8YNmid6H42KRvaVVX7k5Bfkx6Qdghi+YWkedSKB1mKteUsEPzRtjcLUAABgu4SFGX/YuMCCZkXpNx3McnVRNmW5dY+qxlhSQ+3EXEXMCgYEAnnu8IytFU+GQY2xVmxEscQkLmZo8u/UXwBjo+2+OUpdBmv1tCS+NBb2BoGi6ZZ6Nl+2vZQj2r5iILYWlM1UNypV7VT87D7Zfjphvq3IFg7+LHoTklG+MnU8gD0W/Aydm2r5thz/THeYvjU+L0mBALoe6TnKpR/oMFFw/HYRQ2jkCgYEAmbLPg+duzYnyjaT/tPO4ijntCLyJokNjx3kIeqPmJkLjVh+YCt0ugv0XpHNnfav23YIFOphXEdoiatmFhncj8KY/GDlhr+F1/mREhrrWMpMKVzFzf/t6Sz3TabZpj6iRzPtTdbJtomtuduEI2xV0SIfhvbw+jCByj6BPqhN5Rf0CgYAVth2Yg6oTblLTXxsEYFifo0AsTxPVwVT+Ow+W+MeAYsRvEBnyE6pLIcUhzj/yOrXSTOsYdmP6YoghJT/mh/rp4kHXFuiqcne5WRhdzhRJFRTwF6gRQMcJsZbB6JcICv6h2AMUCFHUARhJTLHBSxUlvUHT1hDe09aZ6r964qd6NQ=="
 	aliPublicKey := "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAimaDmFEr8HxMkqUFrd94aGBp2hjpfsOqVWdepqER1kSFv1cwmusOY6wAXhf5GHuKuz9MwjP1LZRr3PmRM/OwD9BFf7t/CKRBn7LFIwCWQ+yN8IWCWcNxSZfAkMRIncA5lAY1r4iqaG++ze7KDLjQD1xI2UaFhUBwKiBoTljC6hfmAYzUPObox+aQq5LUYY98O8DPzZbjDhHc5wq+KqaRfKefcqFkx/6Vy/GGgUjIA8tydN0MOUzZMgu4i8Z4E2H3R98Mt0oEJEFQksZ3NQxqaulO7kl4H/gU97KGEKfjmd2w1opO7FKgihtD2DYcXgtO8iRBhMFz5owc4k2wvKFUCQIDAQAB"
@@ -64,7 +64,7 @@ func TestTradeAppPay(t *testing.T) {
 
 func TestTradePagePayRequest(t *testing.T) {
 	req := alipay.TradePagePayRequestParams{
-		OtherRequestParams:alipay.OtherRequestParams{
+		OtherRequestParams: alipay.OtherRequestParams{
 			NeedEncrypt:  false,
 			ReturnUrl:    "",
 			NotifyUrl:    "",
@@ -84,6 +84,16 @@ func TestTradePagePayRequest(t *testing.T) {
 	t.Log("返回值：", string(bytes))
 }
 
+func TestHandlerAsyncNotify(t *testing.T) {
+	rawBody := ""
+	result, err := aliClient.HandlerAsyncNotify(rawBody, false)
+	if err != nil {
+		t.Log(err.Error())
+		return
+	}
+	bytes, _ := json.Marshal(result)
+	t.Log(string(bytes))
+}
 func TestSyncVerifySign(t *testing.T) {
 	var str string
 	// 证书模式
@@ -97,12 +107,12 @@ func TestSyncVerifySign(t *testing.T) {
 	}
 	bytes, _ := json.Marshal(res)
 	t.Log("返回值：", string(bytes))
-	c, err := NewClient()
+	c, err := NewAliClient()
 	if err != nil {
 		return
 	}
 	var result bool
-	result, err = c.SyncVerifySign(str, "alipay.trade.precreate",false)
+	result, err = c.SyncVerifySign(str, "alipay.trade.precreate", false)
 	if err != nil {
 		t.Log(err)
 		return
