@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/mm-ooto/alipay/consts"
 	"github.com/mm-ooto/alipay/utils"
@@ -100,8 +101,8 @@ func (a *AliClient) HandlerRequest(httpMethod, apiName string, needEncrypt bool,
 		return
 	}
 
-	//bytes, _ := json.Marshal(urlValues.Encode())
-	//fmt.Println("HandlerRequest 请求参数：", string(bytes))
+	bytes, _ := json.Marshal(urlValues.Encode())
+	fmt.Println("HandlerRequest 请求参数：", string(bytes))
 
 	var req *http.Request
 	req, err = http.NewRequest(httpMethod, a.gatewayUrl, strings.NewReader(urlValues.Encode()))
@@ -270,10 +271,10 @@ func (a *AliClient) SyncVerifySign(rawData, apiName string, needEncrypt bool) (r
 		return
 	}
 
-	// 是否需要对内容解密
-	//if needEncrypt {
-	//	resContent, err = a.decryptContent(resContent, needEncrypt)
-	//}
+	//是否需要对内容解密
+	if needEncrypt {
+		resContent, err = a.decryptContent(resContent, needEncrypt)
+	}
 	//fmt.Println("返回的待签名数据为：", resContent)
 	//fmt.Println("返回的签名为：", signStr)
 	// 目前只考虑使用公钥模式签名
@@ -393,45 +394,34 @@ func (a *AliClient) getSign(mapParams map[string]interface{}) (signStr string, e
 	return
 }
 
-//
-//// 对bizContent内容进行加密
-//func (a *AliClient) encryptContent(content string) (ciphertext string, err error) {
-//	// 检查content是否为空
-//	if content == "" || strings.Trim(content, " ") == "" {
-//		err = errors.New("要加密的内容为空")
-//		return
-//	}
-//	if a.encryptType == "" || a.encryptKey == "" {
-//		err = errors.New("加密类型和加密密钥不能为空")
-//		return
-//	}
-//	if a.encryptType != consts.EncryptTypeAes {
-//		err = errors.New("加密类型只支持AES")
-//		return
-//	}
-//	var bytes []byte
-//	bytes, err = utils.AesCBCEncrypt([]byte(content), []byte(a.encryptKey))
-//	if err != nil {
-//		return
-//	}
-//	ciphertext = string(bytes)
-//	return
-//}
-//
-//// 对bizContent内容进行解密
-//func (a *AliClient) decryptContent(sourceContent string, needEncrypt bool) (plaintext string, err error) {
-//	if !needEncrypt {
-//		plaintext = sourceContent
-//		return
-//	}
-//	var bytes []byte
-//	bytes, err = utils.AesCBCDecrypt([]byte(sourceContent), []byte(a.encryptKey))
-//	if err != nil {
-//		return
-//	}
-//	plaintext = string(bytes)
-//	return
-//}
+// 对bizContent内容进行加密
+func (a *AliClient) encryptContent(content string) (encryptContent string, err error) {
+	// 检查content是否为空
+	if content == "" || strings.Trim(content, " ") == "" {
+		err = errors.New("要加密的内容为空")
+		return
+	}
+	if a.encryptType == "" || a.encryptKey == "" {
+		err = errors.New("加密类型和加密密钥不能为空")
+		return
+	}
+	if a.encryptType != consts.EncryptTypeAes {
+		err = errors.New("加密类型只支持AES")
+		return
+	}
+	encryptContent = utils.AesCBCEncrypt(content, []byte(a.encryptKey))
+	return
+}
+
+// 对bizContent内容进行解密
+func (a *AliClient) decryptContent(sourceContent string, needEncrypt bool) (decryptContent string, err error) {
+	if !needEncrypt {
+		decryptContent = sourceContent
+		return
+	}
+	decryptContent = utils.AesCBCDecrypt(sourceContent, []byte(a.encryptKey))
+	return
+}
 
 // SetDataToBizContent 设置业务字段
 func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool) string {
@@ -440,10 +430,11 @@ func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool
 		return ""
 	}
 	bodyStr, _ := json.Marshal(structData)
-	// 是否对biz_content内容进行加密
+	// todo 内容加密/解密这一块没有调试通================
+	// 是否对biz_content内容进行加密，
 	if needEncrypt {
-		//ciphertext, _ := a.encryptContent(string(bodyStr))
-		//return ciphertext
+		encryptContent, _ := a.encryptContent(string(bodyStr))
+		return encryptContent
 	}
 	return string(bodyStr)
 }
