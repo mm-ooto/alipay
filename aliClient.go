@@ -96,9 +96,9 @@ func LoadAlipayRootCertSN(certRootPath, certRootContent string) OptionFunc {
 	return func(c *AliClient) {
 		var certRootSN string
 		if certRootPath != "" {
-			certRootSN, _ = c.GetCertSNFromPath(certRootPath)
+			certRootSN, _ = c.GetRootCertSNFromPath(certRootPath)
 		} else {
-			certRootSN, _ = c.GetCertSNFromContent(certRootContent)
+			certRootSN, _ = c.GetRootCertSNFromContent(certRootContent)
 		}
 		c.alipayRootCertSn = certRootSN
 	}
@@ -503,21 +503,12 @@ func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool
 // certSN 返回证书序列号，SN 值是通过解析 X.509 证书文件中签发机构名称（name）以及内置序列号（serialNumber），
 // 将二者拼接后的字符串计算 MD5 值获取，可参考开放平台 SDK 源码：
 func (a *AliClient) GetCertSNFromPath(certPath string) (certSN string, err error) {
-
-	var x509Cert *x509.Certificate
-	var publicKey *rsa.PublicKey
-	publicKey, x509Cert, err = utils.GetPublicKeyFromCertPath(certPath)
+	certPEMBlock, err := ioutil.ReadFile(certPath)
 	if err != nil {
 		return
 	}
 
-	// 证书序列号的计算
-	certSN = utils.Md5(x509Cert.Issuer.String() + x509Cert.SerialNumber.String())
-	a.mutex.Lock()
-	a.certSnRelationPublicKey[certSN] = publicKey
-	a.mutex.Unlock()
-
-	return
+	return a.GetCertSNFromContent(string(certPEMBlock))
 }
 
 // GetCertSNFromContent 从证书中提取序列号
@@ -528,6 +519,7 @@ func (a *AliClient) GetCertSNFromContent(certContent string) (certSN string, err
 
 	var x509Cert *x509.Certificate
 	var publicKey *rsa.PublicKey
+
 	publicKey, x509Cert, err = utils.GetPublicKeyFromCertContent(certContent)
 	if err != nil {
 		return
@@ -545,10 +537,13 @@ func (a *AliClient) GetCertSNFromContent(certContent string) (certSN string, err
 // GetRootCertSNFromPath 提取根证书序列号
 // rootCertPath 根证书文件地址
 // certSN 返回证书序列号，SN 值是通过解析 X.509 证书文件中签发机构名称（name）以及内置序列号（serialNumber），
-//// 将二者拼接后的字符串计算 MD5 值获取，可参考开放平台 SDK 源码：
+// 将二者拼接后的字符串计算 MD5 值获取，可参考开放平台 SDK 源码：
 func (a *AliClient) GetRootCertSNFromPath(rootCertPath string) (rootCertSN string, err error) {
-	// TODO 待解决==================
-	return
+	certPEMBlock, err := ioutil.ReadFile(rootCertPath)
+	if err != nil {
+		return
+	}
+	return a.GetRootCertSNFromContent(string(certPEMBlock))
 }
 
 // GetRootCertSNFromContent 获取根证书序列号
@@ -556,7 +551,20 @@ func (a *AliClient) GetRootCertSNFromPath(rootCertPath string) (rootCertSN strin
 // certSN 返回证书序列号，SN 值是通过解析 X.509 证书文件中签发机构名称（name）以及内置序列号（serialNumber），
 //// 将二者拼接后的字符串计算 MD5 值获取，可参考开放平台 SDK 源码：
 func (a *AliClient) GetRootCertSNFromContent(rootCertContent string) (rootCertSN string, err error) {
-	// TODO 待解决==================
+	certStrSlice := strings.Split(rootCertContent, consts.CertificateSuffix)
+	var rootCertSnSlice []string
+	for _, v := range certStrSlice {
+		x509Cert, _ := utils.ParseX509Certificate(v + consts.CertificateSuffix)
+		if x509Cert == nil || x509Cert.SignatureAlgorithm != x509.SHA1WithRSA && x509Cert.SignatureAlgorithm != x509.SHA256WithRSA {
+			continue
+		}
+		// 证书序列号的计算
+		certSN := utils.Md5(x509Cert.Issuer.String() + x509Cert.SerialNumber.String())
+		rootCertSnSlice = append(rootCertSnSlice, certSN)
+	}
+	if len(rootCertSnSlice) > 0 {
+		rootCertSN = strings.Join(rootCertSnSlice, "_")
+	}
 	return
 }
 

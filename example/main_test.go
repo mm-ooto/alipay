@@ -33,8 +33,14 @@ func NewAliClient() (aliClient *alipay.AliClient, err error) {
 }
 func TestAlipayTradePrecreate(t *testing.T) {
 	req := alipay.TradePrecreateRequestParams{
-		OutTradeNo:  "20210917010101004",
-		TotalAmount: 0.02,
+		OtherRequestParams: alipay.OtherRequestParams{
+			NeedEncrypt:  false,
+			ReturnUrl:    "",
+			NotifyUrl:    "",
+			AppAuthToken: "",
+		},
+		OutTradeNo:  "20220917010101004",
+		TotalAmount: 100,
 		Subject:     "统一收单线下交易预创建",
 	}
 	res, err := aliClient.TradePrecreateRequest(req)
@@ -84,16 +90,30 @@ func TestTradePagePayRequest(t *testing.T) {
 	t.Log("返回值：", string(bytes))
 }
 
-func TestHandlerAsyncNotify(t *testing.T) {
-	rawBody := ""
-	result, err := aliClient.HandlerAsyncNotify(rawBody, false)
+func TestFundTransUniTransfer(t *testing.T) {
+	req := alipay.FundTransUniTransferRequestParams{
+		OutBizNo:    "201806300001",
+		TransAmount: 0.01,
+		ProductCode: "TRANS_ACCOUNT_NO_PWD",
+		BizScene:    "DIRECT_TRANSFER",
+		OrderTitle:  "单笔转账接口调试",
+		PayeeInfo: &alipay.Participant{
+			Identity:     "2088102175557825",
+			IdentityType: "ALIPAY_USER_ID",
+			Name:         "沙箱环境",
+		},
+		Remark:         "单笔转账接口调试备注",
+		BusinessParams: "{\"payer_show_name_use_alias\":\"true\"}",
+	}
+	res, err := aliClient.FundTransUniTransferRequest(req)
 	if err != nil {
 		t.Log(err.Error())
 		return
 	}
-	bytes, _ := json.Marshal(result)
+	bytes, _ := json.Marshal(res)
 	t.Log(string(bytes))
 }
+
 func TestSyncVerifySign(t *testing.T) {
 	var str string
 	// 证书模式
@@ -118,4 +138,10 @@ func TestSyncVerifySign(t *testing.T) {
 		return
 	}
 	t.Log(result)
+}
+
+func TestLoadACertSn(t *testing.T) {
+	alipay.LoadAlipayRootCertSN("", "")
+	alipay.LoadAliCertSN("", "")
+	alipay.LoadAppCertSN("", "")
 }

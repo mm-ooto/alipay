@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
+	"github.com/mm-ooto/alipay/consts"
 	"io/ioutil"
 )
 
@@ -41,6 +42,9 @@ func ParsePKIXPublicKey(publicKeyPemStr string) (publicKey *rsa.PublicKey, err e
 func ParseX509Certificate(certPemStr string) (x509Cert *x509.Certificate, err error) {
 	// pem解码
 	block, _ := pem.Decode([]byte(certPemStr))
+	if block == nil {
+		return
+	}
 	x509Cert, err = x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return
@@ -87,9 +91,9 @@ func RSAVerify(data string, rsaPublicKey *rsa.PublicKey, signData string, rsaTyp
 // GetPemPublic 将公钥字符串转换为RSA公钥格式
 func GetPemPublic(rawPublicKey string) string {
 	publicPemStr := "-----BEGIN PUBLIC KEY-----\n"
-	strlen := len(rawPublicKey)
-	for i := 0; i < strlen; i += 64 {
-		if i+64 >= strlen {
+	strLen := len(rawPublicKey)
+	for i := 0; i < strLen; i += 64 {
+		if i+64 >= strLen {
 			publicPemStr += rawPublicKey[i:] + "\n"
 		} else {
 			publicPemStr += rawPublicKey[i:i+64] + "\n"
@@ -102,9 +106,9 @@ func GetPemPublic(rawPublicKey string) string {
 // GetPemPrivate 将私钥字符串转换为RSA私钥格式
 func GetPemPrivate(rawPrivateKey string) string {
 	privatePemStr := "-----BEGIN RSA PRIVATE KEY-----\n"
-	strlen := len(rawPrivateKey)
-	for i := 0; i < strlen; i += 64 {
-		if i+64 >= strlen {
+	strLen := len(rawPrivateKey)
+	for i := 0; i < strLen; i += 64 {
+		if i+64 >= strLen {
 			privatePemStr += rawPrivateKey[i:] + "\n"
 		} else {
 			privatePemStr += rawPrivateKey[i:i+64] + "\n"
@@ -116,16 +120,16 @@ func GetPemPrivate(rawPrivateKey string) string {
 
 // GetPemCert 将证书字符串转换为Cert证书格式
 func GetPemCert(rawCert string) string {
-	certPemStr := "-----BEGIN CERTIFICATE-----\n"
-	strlen := len(rawCert)
-	for i := 0; i < strlen; i += 76 {
-		if i+76 >= strlen {
+	certPemStr := consts.CertificatePrefix + "\n"
+	strLen := len(rawCert)
+	for i := 0; i < strLen; i += 76 {
+		if i+76 >= strLen {
 			certPemStr += rawCert[i:] + "\n"
 		} else {
 			certPemStr += rawCert[i:i+76] + "\n"
 		}
 	}
-	certPemStr += "-----END CERTIFICATE-----"
+	certPemStr += consts.CertificateSuffix
 	return certPemStr
 }
 
@@ -136,23 +140,13 @@ func GetPublicKeyFromCertPath(certPath string) (publicKey *rsa.PublicKey, x509Ce
 	if err != nil {
 		return
 	}
-	x509Cert, err = ParseX509Certificate(string(certPEMBlock))
-	if err != nil {
-		return
-	}
-	// 获取该证书里面的公钥
-	var ok bool
-	publicKey, ok = x509Cert.PublicKey.(*rsa.PublicKey)
-	if !ok {
-		return
-	}
-	return
+	return GetPublicKeyFromCertContent(string(certPEMBlock))
 }
 
 // GetPublicKeyFromCertContent 从证书content中提取公钥
 // certContent 公钥应用证书内容字符串（包含begin，end）
 func GetPublicKeyFromCertContent(certContent string) (publicKey *rsa.PublicKey, x509Cert *x509.Certificate, err error) {
-
+	// 解析x509证书
 	x509Cert, err = ParseX509Certificate(certContent)
 	if err != nil {
 		return

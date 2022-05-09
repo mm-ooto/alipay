@@ -1,6 +1,6 @@
 # golang alipay
 
-## 说明：目前只实现了普通公钥模式，公钥证书模式还未完全实现
+## 说明：支持普通公钥模式和公钥证书模式
 
 ## 初始化
 ```go
@@ -14,7 +14,7 @@ func TestName(t *testing.T) {
 }
 ```
 
-## 从证书/证书内容中加载相关的证书序列号（支付宝根证书尚未实现）
+## 从证书/证书内容中加载相关的证书序列号
 ```go
     aliClient.LoadAppCertSN("certPath","certContent")// 加载应用公钥证书序列号SN
     aliClient.LoadAliCertSN("certPath","certContent")// 加载支付宝公钥证书序列号SN
@@ -81,7 +81,8 @@ func TestName(t *testing.T) {
 
 ### 参考文档：
 * 沙箱账号：https://open.alipay.com/develop/sandbox/account
-* 数据签名和验签：https://opendocs.alipay.com/common/02kf5q
+* 数据签名和验签：https://opendocs.alipay.com/common/02kf5q ；  https://opendocs.alipay.com/common/02mse2
 * 支付API文档：https://opendocs.alipay.com/apis
 * 异步通知说明：https://opensupport.alipay.com/support/helpcenter/193/201602472200
 * 异步通知参数说明：https://opendocs.alipay.com/open/203/105286
+* 授权回调地址：https://opendocs.alipay.com/common/02qjlq

@@ -38,5 +38,5 @@ func main() {
 		}
 		c.String(200, "success") // 输出success是表示消息获取成功，支付宝就会停止发送异步
 	})
-	router.Run(":7888")
+	router.Run("192.168.10.254:7888")
 }

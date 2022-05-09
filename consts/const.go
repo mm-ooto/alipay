@@ -34,4 +34,8 @@ const (
 
 	// EncryptTypeAes 加密类型
 	EncryptTypeAes = "AES"
+
+	// CertificatePrefix 证书前后缀标识
+	CertificatePrefix = "-----BEGIN CERTIFICATE-----"
+	CertificateSuffix = "-----END CERTIFICATE-----"
 )
