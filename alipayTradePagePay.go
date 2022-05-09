@@ -8,7 +8,7 @@ func (a *AliClient) TradePagePayRequest(requestParam TradePagePayRequestParams) 
 	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,false)
 	requestDataMap["notify_url"] = requestParam.NotifyUrl
 	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	return a.HandlerPageRequest("GET", "alipay.trade.page.pay", requestDataMap)
+	return a.HandlerPageRequest("POST", "alipay.trade.page.pay", requestDataMap)
 }
 
 // TradePagePayRequestParams 统一收单下单并支付页面接口请求参数

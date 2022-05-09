@@ -76,18 +76,19 @@ func TestTradePagePayRequest(t *testing.T) {
 			NotifyUrl:    "",
 			AppAuthToken: "",
 		},
-		OutTradeNo:  "20220817010101004",
+		OutTradeNo:  "20220917010101004",
 		TotalAmount: "0.01",
 		Subject:     "统一收单下单并支付页面接口",
 	}
-	_, urlRe, err := aliClient.TradePagePayRequest(req)
+	html, urlRe, err := aliClient.TradePagePayRequest(req)
 	if err != nil {
 		t.Log(err)
 		return
 	}
 	t.Log(urlRe)
 	bytes, _ := json.Marshal(urlRe)
-	t.Log("返回值：", string(bytes))
+	t.Log("GET 返回值：", string(bytes))
+	t.Log("POST 返回值：", html)
 }
 
 func TestFundTransUniTransfer(t *testing.T) {
@@ -140,8 +141,3 @@ func TestSyncVerifySign(t *testing.T) {
 	t.Log(result)
 }
 
-func TestLoadACertSn(t *testing.T) {
-	alipay.LoadAlipayRootCertSN("", "")
-	alipay.LoadAliCertSN("", "")
-	alipay.LoadAppCertSN("", "")
-}

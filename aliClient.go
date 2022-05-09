@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/mm-ooto/alipay/consts"
 	"github.com/mm-ooto/alipay/utils"
@@ -51,56 +50,6 @@ type OptionFunc func(c *AliClient)
 func AddClient(client *http.Client) OptionFunc {
 	return func(c *AliClient) {
 		c.Client = client
-	}
-}
-
-// AddEncryptKey 添加加密密钥
-func AddEncryptKey(encryptKey string) OptionFunc {
-	return func(c *AliClient) {
-		c.encryptType = consts.EncryptTypeAes
-		c.encryptKey = encryptKey
-	}
-}
-
-// LoadAppCertSN 从应用公钥证书中加载 应用公钥证书序列号SN
-// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
-func LoadAppCertSN(certPath, certContent string) OptionFunc {
-	return func(c *AliClient) {
-		var certSN string
-		if certPath != "" {
-			certSN, _ = c.GetCertSNFromPath(certPath)
-		} else {
-			certSN, _ = c.GetCertSNFromContent(certContent)
-		}
-		c.appCertSN = certSN
-	}
-}
-
-// LoadAliCertSN 从支付宝公钥证书中加载 支付宝公钥证书序列号SN
-// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
-func LoadAliCertSN(certPath, certContent string) OptionFunc {
-	return func(c *AliClient) {
-		var certSN string
-		if certPath != "" {
-			certSN, _ = c.GetCertSNFromPath(certPath)
-		} else {
-			certSN, _ = c.GetCertSNFromContent(certContent)
-		}
-		c.aliCertSN = certSN
-	}
-}
-
-// LoadAlipayRootCertSN 从支付宝根证书书中加载 支付宝根证书序列号SN
-// certPath：从证书中提取序列号，certRootContent：从证书内容中提取序列号
-func LoadAlipayRootCertSN(certRootPath, certRootContent string) OptionFunc {
-	return func(c *AliClient) {
-		var certRootSN string
-		if certRootPath != "" {
-			certRootSN, _ = c.GetRootCertSNFromPath(certRootPath)
-		} else {
-			certRootSN, _ = c.GetRootCertSNFromContent(certRootContent)
-		}
-		c.alipayRootCertSn = certRootSN
 	}
 }
 
@@ -322,9 +271,9 @@ func (a *AliClient) SyncVerifySign(rawData, apiName string, needEncrypt bool) (r
 	}
 
 	// 是否需要对内容解密
-	if needEncrypt {
-		resContent, err = a.decryptContent(resContent, needEncrypt)
-	}
+	//if needEncrypt {
+	//	resContent, err = a.decryptContent(resContent, needEncrypt)
+	//}
 	//fmt.Println("返回的待签名数据为：", resContent)
 	//fmt.Println("返回的签名为：", signStr)
 	// 目前只考虑使用公钥模式签名
@@ -444,44 +393,45 @@ func (a *AliClient) getSign(mapParams map[string]interface{}) (signStr string, e
 	return
 }
 
-// 对bizContent内容进行加密
-func (a *AliClient) encryptContent(content string) (ciphertext string, err error) {
-	// 检查content是否为空
-	if content == "" || strings.Trim(content, " ") == "" {
-		err = errors.New("要加密的内容为空")
-		return
-	}
-	if a.encryptType == "" || a.encryptKey == "" {
-		err = errors.New("加密类型和加密密钥不能为空")
-		return
-	}
-	if a.encryptType != consts.EncryptTypeAes {
-		err = errors.New("加密类型只支持AES")
-		return
-	}
-	var bytes []byte
-	bytes, err = utils.AesCBCEncrypt([]byte(content), []byte(a.encryptKey))
-	if err != nil {
-		return
-	}
-	ciphertext = string(bytes)
-	return
-}
-
-// 对bizContent内容进行解密
-func (a *AliClient) decryptContent(sourceContent string, needEncrypt bool) (plaintext string, err error) {
-	if !needEncrypt {
-		plaintext = sourceContent
-		return
-	}
-	var bytes []byte
-	bytes, err = utils.AesCBCDecrypt([]byte(sourceContent), []byte(a.encryptKey))
-	if err != nil {
-		return
-	}
-	plaintext = string(bytes)
-	return
-}
+//
+//// 对bizContent内容进行加密
+//func (a *AliClient) encryptContent(content string) (ciphertext string, err error) {
+//	// 检查content是否为空
+//	if content == "" || strings.Trim(content, " ") == "" {
+//		err = errors.New("要加密的内容为空")
+//		return
+//	}
+//	if a.encryptType == "" || a.encryptKey == "" {
+//		err = errors.New("加密类型和加密密钥不能为空")
+//		return
+//	}
+//	if a.encryptType != consts.EncryptTypeAes {
+//		err = errors.New("加密类型只支持AES")
+//		return
+//	}
+//	var bytes []byte
+//	bytes, err = utils.AesCBCEncrypt([]byte(content), []byte(a.encryptKey))
+//	if err != nil {
+//		return
+//	}
+//	ciphertext = string(bytes)
+//	return
+//}
+//
+//// 对bizContent内容进行解密
+//func (a *AliClient) decryptContent(sourceContent string, needEncrypt bool) (plaintext string, err error) {
+//	if !needEncrypt {
+//		plaintext = sourceContent
+//		return
+//	}
+//	var bytes []byte
+//	bytes, err = utils.AesCBCDecrypt([]byte(sourceContent), []byte(a.encryptKey))
+//	if err != nil {
+//		return
+//	}
+//	plaintext = string(bytes)
+//	return
+//}
 
 // SetDataToBizContent 设置业务字段
 func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool) string {
@@ -492,8 +442,8 @@ func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool
 	bodyStr, _ := json.Marshal(structData)
 	// 是否对biz_content内容进行加密
 	if needEncrypt {
-		ciphertext, _ := a.encryptContent(string(bodyStr))
-		return ciphertext
+		//ciphertext, _ := a.encryptContent(string(bodyStr))
+		//return ciphertext
 	}
 	return string(bodyStr)
 }
@@ -566,6 +516,48 @@ func (a *AliClient) GetRootCertSNFromContent(rootCertContent string) (rootCertSN
 		rootCertSN = strings.Join(rootCertSnSlice, "_")
 	}
 	return
+}
+
+// AddEncryptKey 添加加密密钥
+func (a *AliClient) AddEncryptKey(encryptKey string) {
+	a.encryptType = consts.EncryptTypeAes
+	a.encryptKey = encryptKey
+}
+
+// LoadAppCertSN 从应用公钥证书中加载 应用公钥证书序列号SN
+// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
+func (a *AliClient) LoadAppCertSN(certPath, certContent string) {
+	var certSN string
+	if certPath != "" {
+		certSN, _ = a.GetCertSNFromPath(certPath)
+	} else {
+		certSN, _ = a.GetCertSNFromContent(certContent)
+	}
+	a.appCertSN = certSN
+}
+
+// LoadAliCertSN 从支付宝公钥证书中加载 支付宝公钥证书序列号SN
+// certPath：从证书中提取序列号，certContent：从证书内容中提取序列号
+func (a *AliClient) LoadAliCertSN(certPath, certContent string) {
+	var certSN string
+	if certPath != "" {
+		certSN, _ = a.GetCertSNFromPath(certPath)
+	} else {
+		certSN, _ = a.GetCertSNFromContent(certContent)
+	}
+	a.aliCertSN = certSN
+}
+
+// LoadAlipayRootCertSN 从支付宝根证书书中加载 支付宝根证书序列号SN
+// certPath：从证书中提取序列号，certRootContent：从证书内容中提取序列号
+func (a *AliClient) LoadAlipayRootCertSN(certRootPath, certRootContent string) {
+	var certRootSN string
+	if certRootPath != "" {
+		certRootSN, _ = a.GetRootCertSNFromPath(certRootPath)
+	} else {
+		certRootSN, _ = a.GetRootCertSNFromContent(certRootContent)
+	}
+	a.alipayRootCertSn = certRootSN
 }
 
 // EncodeURLParam 将参数mapParams编码为url编码格式
