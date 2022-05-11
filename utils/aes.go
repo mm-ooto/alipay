@@ -45,34 +45,35 @@ func PKCS7UnPadding(origData []byte) []byte {
 	return origData[:(length - unPadding)]
 }
 
-
 // AesCBCEncrypt AES加密（CBC模式）
 // plaintext代表明文，secretKey代表密钥（密钥长度必须是16的倍数）
-func AesCBCEncrypt(plaintext string, secretKey []byte) string {
+func AesCBCEncrypt(plaintext string, secretKey []byte) (string, error) {
+	secretKey, _ = base64.StdEncoding.DecodeString(string(secretKey))
 	block, err := aes.NewCipher(secretKey)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	blockSize := block.BlockSize()
 	plaintextPad := PKCS7Padding([]byte(plaintext), blockSize)
 	blockMode := cipher.NewCBCEncrypter(block, secretKey[:blockSize])
 	ciphertext := make([]byte, len(plaintextPad))
 	blockMode.CryptBlocks(ciphertext, plaintextPad)
-	return base64.StdEncoding.EncodeToString(ciphertext)
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
 // AesCBCDecrypt AES解密（CBC模式）
 // ciphertext代表密文，secretKey代表密钥（密钥长度必须是16的倍数）
-func AesCBCDecrypt(ciphertext string, secretKey []byte) string {
+func AesCBCDecrypt(ciphertext string, secretKey []byte) (string, error) {
+	secretKey, _ = base64.StdEncoding.DecodeString(string(secretKey))
 	decodeData, err := base64.StdEncoding.DecodeString(ciphertext)
 	block, err := aes.NewCipher(secretKey)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	blockSize := block.BlockSize()
 	blockMode := cipher.NewCBCDecrypter(block, secretKey[:blockSize])
 	origData := make([]byte, len(decodeData))
 	blockMode.CryptBlocks(origData, decodeData)
 	origData = PKCS7UnPadding(origData)
-	return string(origData)
+	return string(origData), nil
 }

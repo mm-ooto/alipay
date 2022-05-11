@@ -26,8 +26,14 @@ const (
 
 	// AlipayCertSnField 支付宝公钥证书序列号
 	AlipayCertSnField = "alipay_cert_sn"
+	// SignFiled 签名字段
 	SignFiled         = "sign"
+	// SignTypeFiled 签名类型字段
 	SignTypeFiled     = "sign_type"
+	// ResponseSuffix 响应后缀
+	ResponseSuffix = "_response"
+	// ErrorResponse 错误响应
+	ErrorResponse = "error_response"
 
 	// SuccessCode 接口调用成功时的返回码
 	SuccessCode = "10000"

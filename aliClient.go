@@ -101,8 +101,7 @@ func (a *AliClient) HandlerRequest(httpMethod, apiName string, needEncrypt bool,
 		return
 	}
 
-	bytes, _ := json.Marshal(urlValues.Encode())
-	fmt.Println("HandlerRequest 请求参数：", string(bytes))
+	//fmt.Println("HandlerRequest 请求参数：", urlValues.Encode())
 
 	var req *http.Request
 	req, err = http.NewRequest(httpMethod, a.gatewayUrl, strings.NewReader(urlValues.Encode()))
@@ -122,14 +121,19 @@ func (a *AliClient) HandlerRequest(httpMethod, apiName string, needEncrypt bool,
 	if err != nil {
 		return
 	}
-
+	resContent := string(data)
+	//fmt.Println("响应数据:", resContent)
 	// 对返回结果验签
-	_, err = a.SyncVerifySign(string(data), apiName, needEncrypt)
+	_, err = a.SyncVerifySign(resContent, apiName)
 	if err != nil {
 		return
 	}
 
-	if err = json.Unmarshal(data, &result); err != nil {
+	// todo 对内容解密，这一块有问题
+	if needEncrypt {
+		resContent = a.decryptJSONSignSource(apiName, resContent)
+	}
+	if err = json.Unmarshal([]byte(resContent), &result); err != nil {
 		return
 	}
 
@@ -205,16 +209,11 @@ func (a *AliClient) handlerParams(apiName string, requestDataMap map[string]inte
 
 	// 获取签名
 	var signStr string
-	signStr, err = a.getSign(requestDataMap)
+	signStr, urlValues, err = a.getSign(requestDataMap)
 	if err != nil {
 		return
 	}
-	requestDataMap[consts.SignFiled] = signStr
-
-	urlValues = url.Values{}
-	for key, value := range requestDataMap {
-		urlValues.Add(key, value.(string))
-	}
+	urlValues.Add(consts.SignFiled, signStr)
 	return
 }
 
@@ -264,17 +263,10 @@ func (a *AliClient) AsyncNotifyVerifySign(urlValues url.Values, isLifeIsNo bool)
 // 公钥证书模式说明：
 // 1.公钥证书模式下，开放平台网关的同步响应报文中，会多一个响应参数 alipay_cert_sn（支付宝公钥证书序列号），与 xxx_repsose、sign 平级，该参数表示开发者需要使用该 SN 对应的支付宝公钥证书验签。详情请参考 常见问题。
 // 2.支付宝公钥证书由于证书到期等原因，会重新签发新的证书（证书中密钥内容不变），开发者在自行实现的验签逻辑中需要判断当前使用的支付宝公钥证书 SN 与网关响应报文中的 SN 是否一致。若不一致，开发者需先调用 支付宝公钥证书下载接口 下载对应的支付宝公钥证书，再做验签。
-func (a *AliClient) SyncVerifySign(rawData, apiName string, needEncrypt bool) (result bool, err error) {
+func (a *AliClient) SyncVerifySign(rawData, apiName string) (result bool, err error) {
 	var resContent, signStr, alipayCertSn string
-	resContent, signStr, alipayCertSn, err = a.parseJsonRawData(rawData, apiName)
-	if err != nil {
-		return
-	}
+	resContent, signStr, alipayCertSn = a.parseJSONSource(rawData, apiName)
 
-	//是否需要对内容解密
-	if needEncrypt {
-		resContent, err = a.decryptContent(resContent, needEncrypt)
-	}
 	//fmt.Println("返回的待签名数据为：", resContent)
 	//fmt.Println("返回的签名为：", signStr)
 	// 目前只考虑使用公钥模式签名
@@ -324,47 +316,90 @@ func (a *AliClient) SyncVerifySign(rawData, apiName string, needEncrypt bool) (r
 	return
 }
 
-// parseJsonRawData 解析原始数据
-// strParams 待签名数据
-// sign 签名
-func (a *AliClient) parseJsonRawData(rawData, apiName string) (resContent, sign, alipayCertSn string, err error) {
-	// 将apiName转换为xxx_response格式
-	var apiNameResponse = strings.Replace(apiName, ".", "_", -1) + "_response"
-	var apiNameIndex = strings.LastIndex(rawData, apiNameResponse)
-	var signIndex = strings.LastIndex(rawData, "\""+consts.SignFiled+"\"")
-	var alipayCertSnIndex = strings.LastIndex(rawData, "\""+consts.AlipayCertSnField+"\"") // 如果>0说明签名是公钥证书模式
+// 获取未加密内容
+func (a *AliClient) parseJSONSource(apiName, responseRawData string) (resContent, sign, alipayCertSn string) {
+	rootNodeName := strings.Replace(apiName, ".", "_", -1) + consts.ResponseSuffix
+	rootIndex := strings.LastIndex(responseRawData, rootNodeName)
+	if rootIndex > 0 {
+		return a.parseJSONSourceItem(responseRawData, rootNodeName, rootIndex)
+	}
+	return
+}
+
+// parseJSONSignSourceItem 解析json
+// resContent：待签名数据，sign：签名，alipayCertSn：支付宝证书序列号（加签模式为公钥证书模式时）
+func (a *AliClient) parseJSONSourceItem(responseRawData, nodeName string, nodeIndex int) (resContent, sign, alipayCertSn string) {
+	var signIndex = strings.LastIndex(responseRawData, "\""+consts.SignFiled+"\"")
+	var alipayCertSnIndex = strings.LastIndex(responseRawData, "\""+consts.AlipayCertSnField+"\"") // 如果>0说明签名是公钥证书模式
 	var splitStartIndex, splitEndIndex int
+
 	if alipayCertSnIndex > 0 {
 		splitEndIndex = alipayCertSnIndex - 1
 	} else if signIndex > 0 {
 		splitEndIndex = signIndex - 1
 	} else {
-		splitEndIndex = len(rawData) - 1
+		splitEndIndex = len(responseRawData) - 1
 	}
-	splitStartIndex = apiNameIndex + len(apiNameResponse) + 2
+	splitStartIndex = nodeIndex + len(nodeName) + 2
 	if splitEndIndex-splitStartIndex <= 0 {
 		return
 	}
 	// 获取返回值中的 待验签字段数据
-	resContent = rawData[splitStartIndex:splitEndIndex]
-
+	resContent = responseRawData[splitStartIndex:splitEndIndex]
 	// 获取返回值中的 签名
 	if signIndex > 0 {
-		sign = rawData[signIndex+len(consts.SignFiled)+4:]
+		sign = responseRawData[signIndex+len(consts.SignFiled)+4:]
 		sign = sign[:strings.LastIndex(sign, "\"")]
 	}
 	// 获取 返回值中的 alipay_cert_sn
 	if alipayCertSnIndex > 0 {
-		alipayCertSn = rawData[alipayCertSnIndex+len(consts.AlipayCertSnField)+4:]
+		alipayCertSn = responseRawData[alipayCertSnIndex+len(consts.AlipayCertSnField)+4:]
 		alipayCertSn = alipayCertSn[:strings.Index(alipayCertSn, "\"")]
 	}
 	return
 }
 
+// decryptJSONSignSource 解密内容
+func (a *AliClient) decryptJSONSignSource(apiName, responseRawData string) (decryptContent string) {
+	rootNodeName := strings.Replace(apiName, ".", "_", -1) + consts.ResponseSuffix
+	rootIndex := strings.LastIndex(responseRawData, rootNodeName)
+	if rootIndex > 0 {
+		a.parseEncryptJSONSourceItem(responseRawData, rootNodeName, rootIndex)
+	}
+	return
+}
+
+// parseEncryptJSONSourceItem 解析加密的json
+// resContent：待签名数据，sign：签名，alipayCertSn：支付宝证书序列号（加签模式为公钥证书模式时）
+func (a *AliClient) parseEncryptJSONSourceItem(responseRawData, nodeName string, nodeIndex int) {
+	var signIndex = strings.LastIndex(responseRawData, "\""+consts.SignFiled+"\"")
+	var alipayCertSnIndex = strings.LastIndex(responseRawData, "\""+consts.AlipayCertSnField+"\"") // 如果>0说明签名是公钥证书模式
+	var splitStartIndex, splitEndIndex int
+
+	if alipayCertSnIndex > 0 {
+		splitEndIndex = alipayCertSnIndex - 1
+	} else if signIndex > 0 {
+		splitEndIndex = signIndex - 1
+	} else {
+		splitEndIndex = len(responseRawData) - 1
+	}
+	splitStartIndex = nodeIndex + len(nodeName) + 3
+	if splitEndIndex-splitStartIndex <= 0 {
+		return
+	}
+	// 获取返回值中的 加密的待验签数据
+	encryptContent := responseRawData[splitStartIndex : splitEndIndex-1]
+	// 内容解密
+	decryptBizContent, _ := a.decryptContent(encryptContent)
+	//bodyIndexContent := responseRawData[:]
+	fmt.Println("解密后的数据为：",decryptBizContent)
+	//	最后完整的json串：
+}
+
 // sortParams 参数排序处理最终得到待签名字符串
 // 按API要求, 参数名应按照第一个字符的键值 ASCII 码递增排序（字母升序排序）
 // 如果遇到相同字符则按照第二个字符的键值 ASCII 码递增排序
-func sortParams(mapParams map[string]interface{}) (strParams string) {
+func sortParams(mapParams map[string]interface{}) (strParams string, urlValues url.Values) {
 	// 进行字典排序
 	keys := make([]string, 0)
 	for k, _ := range mapParams {
@@ -372,12 +407,14 @@ func sortParams(mapParams map[string]interface{}) (strParams string) {
 	}
 	sort.Strings(keys)
 
+	urlValues = url.Values{}
 	// 组成字符串
 	var valueList = make([]string, 0, 0)
 	for _, key := range keys {
 		valueStr := fmt.Sprintf("%v", mapParams[key]) // 去除空数据
 		if len(valueStr) > 0 {
 			valueList = append(valueList, key+"="+valueStr)
+			urlValues.Add(key, valueStr)
 		}
 	}
 	strParams = strings.Join(valueList, "&")
@@ -385,8 +422,9 @@ func sortParams(mapParams map[string]interface{}) (strParams string) {
 }
 
 // getSign 获取签名
-func (a *AliClient) getSign(mapParams map[string]interface{}) (signStr string, err error) {
-	strParams := sortParams(mapParams)
+func (a *AliClient) getSign(mapParams map[string]interface{}) (signStr string, urlValues url.Values, err error) {
+	var strParams string
+	strParams, urlValues = sortParams(mapParams)
 	signStr, err = utils.RSASign(strParams, a.appPrivateKey, a.signType)
 	if err != nil {
 		return
@@ -409,17 +447,13 @@ func (a *AliClient) encryptContent(content string) (encryptContent string, err e
 		err = errors.New("加密类型只支持AES")
 		return
 	}
-	encryptContent = utils.AesCBCEncrypt(content, []byte(a.encryptKey))
+	encryptContent, err = utils.AesCBCEncrypt(content, []byte(a.encryptKey))
 	return
 }
 
-// 对bizContent内容进行解密
-func (a *AliClient) decryptContent(sourceContent string, needEncrypt bool) (decryptContent string, err error) {
-	if !needEncrypt {
-		decryptContent = sourceContent
-		return
-	}
-	decryptContent = utils.AesCBCDecrypt(sourceContent, []byte(a.encryptKey))
+// 对bizContent内容进行解密（如果对请求参数做了 AES 加密，针对支付宝回复报文，开发者需要先验签，再解密）
+func (a *AliClient) decryptContent(sourceContent string) (decryptContent string, err error) {
+	decryptContent, err = utils.AesCBCDecrypt(sourceContent, []byte(a.encryptKey))
 	return
 }
 

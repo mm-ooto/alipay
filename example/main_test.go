@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mm-ooto/alipay"
 	"testing"
+	"time"
 )
 
 var aliClient *alipay.AliClient
@@ -41,7 +42,7 @@ func TestAlipayTradePrecreate(t *testing.T) {
 			NotifyUrl:    "",
 			AppAuthToken: "",
 		},
-		OutTradeNo:  "20220917010101004",
+		OutTradeNo:  fmt.Sprintf("%d",time.Now().UnixNano()),
 		TotalAmount: 100,
 		Subject:     "统一收单线下交易预创建",
 	}
@@ -58,7 +59,7 @@ func TestAlipayTradePrecreate(t *testing.T) {
 
 func TestTradeAppPay(t *testing.T) {
 	req := alipay.TradeAppPayRequestParams{
-		OutTradeNo:  "20210817010101004",
+		OutTradeNo:  fmt.Sprintf("%d",time.Now().UnixNano()),
 		TotalAmount: "0.01",
 		Subject:     "app支付接口2.0",
 	}
@@ -79,7 +80,7 @@ func TestTradePagePayRequest(t *testing.T) {
 			NotifyUrl:    "",
 			AppAuthToken: "",
 		},
-		OutTradeNo:  "20220917010101004",
+		OutTradeNo:  fmt.Sprintf("%d",time.Now().UnixNano()),
 		TotalAmount: "0.01",
 		Subject:     "统一收单下单并支付页面接口",
 	}
@@ -96,7 +97,7 @@ func TestTradePagePayRequest(t *testing.T) {
 
 func TestFundTransUniTransfer(t *testing.T) {
 	req := alipay.FundTransUniTransferRequestParams{
-		OutBizNo:    "201806300001",
+		OutBizNo:   fmt.Sprintf("%d",time.Now().UnixNano()),
 		TransAmount: 0.01,
 		ProductCode: "TRANS_ACCOUNT_NO_PWD",
 		BizScene:    "DIRECT_TRANSFER",
@@ -136,10 +137,27 @@ func TestSyncVerifySign(t *testing.T) {
 		return
 	}
 	var result bool
-	result, err = c.SyncVerifySign(str, "alipay.trade.precreate", false)
+	result, err = c.SyncVerifySign(str, "alipay.trade.precreate")
 	if err != nil {
 		t.Log(err)
 		return
 	}
 	t.Log(result)
+}
+
+func TestAesCBCDecrypt(t *testing.T) {
+	//plaintext:="TestAesCBCDecrypt"
+	//encryptStr,err:=utils.AesCBCEncrypt(plaintext,[]byte(encryptKey))
+	//if err!=nil{
+	//	t.Log(err)
+	//	return
+	//}
+	////func AesCBCEncrypt(plaintext string, secretKey []byte) string {
+	////ciphertext:="0qsDWRG3FrvPTo6nDKqWk2T6k9GkQIRAskrWSaHzRssaVgqJD5Toc3PZ3yI8M13tzzfMTXUSoL+XHrfnma20bLvWopFU4wwC5az8aAxc33srybWXHTl6CtUuMC/ETJaiW7QhOHtXKeuFtampu4Wsbw=="
+	//res,err:=utils.AesCBCDecrypt(encryptStr,[]byte(encryptKey))
+	//if err!=nil{
+	//	t.Log(err)
+	//	return
+	//}
+	//t.Log(res)
 }

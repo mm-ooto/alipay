@@ -1,6 +1,17 @@
-# golang alipay
+# Alipay SDK for Golang
 
 ## 说明：支持普通公钥模式和公钥证书模式
+
+## 加签的两种模式（所需要的信息）
+### 公钥证书模式
+`AppID`、`应用的私钥`、`应用的公钥证书文件`、`支付宝公钥证书文件`、`支付宝根证书文件`
+
+### 公钥模式
+`AppId`、`应用的私钥`、`应用的公钥`、`支付宝公钥`
+
+## 使用步骤：
+1. 创建一个AliClient实例
+2. 设置request参数并发起API请求，方法（AliClient.HandlerRequest）
 
 ## 初始化
 ```go
@@ -14,14 +25,14 @@ func TestName(t *testing.T) {
 }
 ```
 
-## 从证书/证书内容中加载相关的证书序列号
+## 从证书/证书内容中加载相关的证书序列号（certPath，certContent 二选一）
 ```go
     aliClient.LoadAppCertSN("certPath","certContent")// 加载应用公钥证书序列号SN
     aliClient.LoadAliCertSN("certPath","certContent")// 加载支付宝公钥证书序列号SN
     aliClient.LoadAlipayRootCertSn("certRootPath","certRootContent")// 加载支付宝根证书序列号SN
 ```
 
-## 用法
+## 示例
 ```go
 func TestName(t *testing.T) {
     aliClient, err := alipay.NewAliClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
