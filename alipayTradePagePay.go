@@ -5,7 +5,7 @@ import "net/url"
 // TradePagePayRequest 统一收单下单并支付页面接口
 func (a *AliClient) TradePagePayRequest(requestParam TradePagePayRequestParams) (result string, urlResult *url.URL, err error) {
 	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,false)
+	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
 	requestDataMap["notify_url"] = requestParam.NotifyUrl
 	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	return a.HandlerPageRequest("GET", "alipay.trade.page.pay", requestDataMap)
@@ -19,7 +19,7 @@ type TradePagePayRequestParams struct {
 	OutTradeNo          string               `json:"out_trade_no"`                    // 商户订单号。由商家自定义，64个字符以内，仅支持字母、数字、下划线且需保证在商户端不重复。
 	TotalAmount         string               `json:"total_amount"`                    // 订单总金额。单位为元，精确到小数点后两位，取值范围：[0.01,100000000] 。
 	Subject             string               `json:"subject"`                         // 订单标题。 注意：不可使用特殊字符，如 /，=，& 等。
-	ProductCode         string               `json:"product_code,omitempty"`          // 产品码。 商家和支付宝签约的产品码。 枚举值（点击查看签约情况）：QUICK_MSECURITY_PAY：无线快捷支付产品；CYCLE_PAY_AUTH：周期扣款产品。默认值为QUICK_MSECURITY_PAY。
+	ProductCode         string               `json:"product_code"`                    // 产品码。 商家和支付宝签约的产品码。 枚举值（点击查看签约情况）：QUICK_MSECURITY_PAY：无线快捷支付产品；CYCLE_PAY_AUTH：周期扣款产品。默认值为QUICK_MSECURITY_PAY。
 	Body                string               `json:"body,omitempty"`                  // 订单附加信息。如果请求时传递了该参数，将在异步通知、对账单中原样返回，同时会在商户和用户的pc账单详情中作为交易描述展示
 	QrPayMode           string               `json:"qr_pay_mode,omitempty"`           // PC扫码支付的方式。 支持前置模式和跳转模式。前置模式是将二维码前置到商户的订单确认页的模式。需要商户在自己的页面中以 iframe 方式请求支付宝页面。具体支持的枚举值请查看文档
 	QrcodeWidth         string               `json:"qrcode_width,omitempty"`          // 商户自定义二维码宽度。 注：qr_pay_mode=4时该参数有效

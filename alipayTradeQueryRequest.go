@@ -3,9 +3,9 @@ package alipay
 // TradeQueryRequest 统一收单线下交易查询
 func (a *AliClient) TradeQueryRequest(requestParam TradeQueryRequestParams) (responseParam TradeQueryResponseParams, err error) {
 	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,requestParam.NeedEncrypt)
+	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
 	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if err = a.HandlerRequest("POST", "alipay.trade.query",requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	if err = a.HandlerRequest("POST", "alipay.trade.query", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
 		return
 	}
 	return
@@ -16,10 +16,10 @@ func (a *AliClient) TradeQueryRequest(requestParam TradeQueryRequestParams) (res
 type TradeQueryRequestParams struct {
 	OtherRequestParams
 
-	OutTradeNo   string    `json:"out_trade_no,omitempty" mxLength:"64" mustInput:"N"`     // 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
-	TradeNo      string    `json:"trade_no,omitempty" mxLength:"64" mustInput:"N"`         // 支付宝交易号，和商户订单号不能同时为空
-	OrgPid       string    `json:"org_pid,omitempty" mxLength:"16" mustInput:"N"`          // 银行间联模式下有用，其它场景请不要使用； 双联通过该参数指定需要查询的交易所属收单机构的pid;
-	QueryOptIons []*string `json:"query_opt_ions,omitempty" mxLength:"1024" mustInput:"N"` // 查询选项，商户传入该参数可定制本接口同步响应额外返回的信息字段，数组格式。支持枚举如下：trade_settle_info：返回的交易结算信息，包含分账、补差等信息。 fund_bill_list：交易支付使用的资金渠道。
+	OutTradeNo   string    `json:"out_trade_no,omitempty"`   // 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
+	TradeNo      string    `json:"trade_no,omitempty"`       // 支付宝交易号，和商户订单号不能同时为空
+	OrgPid       string    `json:"org_pid,omitempty"`        // 银行间联模式下有用，其它场景请不要使用； 双联通过该参数指定需要查询的交易所属收单机构的pid;
+	QueryOptIons []*string `json:"query_opt_ions,omitempty"` // 查询选项，商户传入该参数可定制本接口同步响应额外返回的信息字段，数组格式。支持枚举如下：trade_settle_info：返回的交易结算信息，包含分账、补差等信息。 fund_bill_list：交易支付使用的资金渠道。
 }
 
 // TradeQueryResponseParams 统一收单线下交易查询响应参数

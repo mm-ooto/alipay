@@ -23,4 +23,10 @@ type TradeDataserviceBillDownloadURLQueryRequestParams struct {
 
 // TradeDataserviceBillDownloadURLQueryResponseParams 查询对账单下载地址接口响应参数
 type TradeDataserviceBillDownloadURLQueryResponseParams struct {
+	Data struct {
+		CommonResParams
+		BillDownloadUrl string `json:"bill_download_url"` // 账单下载地址链接，获取连接后30秒后未下载，链接地址失效。
+	} `json:"alipay_data_dataservice_bill_downloadurl_query_response"`
+	Sign string `json:"sign"` // 签名
+
 }

@@ -18,10 +18,10 @@ func (a *AliClient) TradeFastpayRefundQueryRequest(requestParam TradeFastpayRefu
 type TradeFastpayRefundQueryRequestParams struct {
 	OtherRequestParams
 
-	TradeNo      string    `json:"trade_no,omitempty" mxLength:"64" mustInput:"N"`        // 支付宝交易号。 和商户订单号不能同时为空
-	OutTradeNo   string    `json:"out_trade_no,omitempty" mxLength:"64" mustInput:"N"`    // 商户订单号。 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
-	OutRequestNo string    `json:"out_request_no" mxLength:"64" mustInput:"N"`            // 退款请求号。 请求退款接口时，传入的退款请求号，如果在退款请求时未传入，则该值为创建交易时的商户订单号。
-	QueryOptions []*string `json:"query_options,omitempty" mxLength:"1024" mustInput:"N"` // 查询选项
+	TradeNo      string    `json:"trade_no,omitempty"`      // 支付宝交易号。 和商户订单号不能同时为空
+	OutTradeNo   string    `json:"out_trade_no,omitempty"`  // 商户订单号。 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
+	OutRequestNo string    `json:"out_request_no"`          // 退款请求号。 请求退款接口时，传入的退款请求号，如果在退款请求时未传入，则该值为创建交易时的商户订单号。
+	QueryOptions []*string `json:"query_options,omitempty"` // 查询选项
 }
 
 // TradeFastpayRefundQueryResponseParams 统一收单交易退款查询响应参数

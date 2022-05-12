@@ -83,6 +83,7 @@ func TestTradePagePayRequest(t *testing.T) {
 		OutTradeNo:  fmt.Sprintf("%d",time.Now().UnixNano()),
 		TotalAmount: "0.01",
 		Subject:     "统一收单下单并支付页面接口",
+		ProductCode: "FAST_INSTANT_TRADE_PAY",
 	}
 	html, urlRe, err := aliClient.TradePagePayRequest(req)
 	if err != nil {
