@@ -1,11 +1,17 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // TradeAppPayRequest app支付接口2.0
 func (a *AliClient) TradeAppPayRequest(requestParam TradeAppPayRequestParams) (result string, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,false)
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	return a.HandlerSDKRequest("alipay.trade.app.pay", requestDataMap)
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	return a.HandlerSDKRequest(&requestParam)
 }
 
 // TradeAppPayRequestParams app支付接口2.0请求参数 ,omitempty
@@ -16,7 +22,7 @@ type TradeAppPayRequestParams struct {
 	OutTradeNo          string                `json:"out_trade_no"`                    // 商户订单号。由商家自定义，64个字符以内，仅支持字母、数字、下划线且需保证在商户端不重复。
 	TotalAmount         string                `json:"total_amount"`                    // 订单总金额。单位为元，精确到小数点后两位，取值范围：[0.01,100000000] 。
 	Subject             string                `json:"subject"`                         // 订单标题。 注意：不可使用特殊字符，如 /，=，& 等。
-	ProductCode         string                `json:"product_code,omitempty"`          // 产品码。 商家和支付宝签约的产品码。 枚举值（点击查看签约情况）：QUICK_MSECURITY_PAY：无线快捷支付产品；CYCLE_PAY_AUTH：周期扣款产品。默认值为QUICK_MSECURITY_PAY。
+	ProductCode         string                `json:"product_code"`                    // 产品码。 商家和支付宝签约的产品码。 枚举值（点击查看签约情况）：QUICK_MSECURITY_PAY：无线快捷支付产品；CYCLE_PAY_AUTH：周期扣款产品。默认值为QUICK_MSECURITY_PAY。
 	Body                string                `json:"body,omitempty"`                  // 订单附加信息。如果请求时传递了该参数，将在异步通知、对账单中原样返回，同时会在商户和用户的pc账单详情中作为交易描述展示
 	GoodsDetail         []*GoodsDetailParams  `json:"goods_detail,omitempty"`          // 订单包含的商品列表信息，json格式，其它说明详见商品明细说明
 	TimeExpire          string                `json:"time_expire,omitempty"`           // 订单绝对超时时间。格式为yyyy-MM-dd HH:mm:ss。注：time_expire和timeout_express两者只需传入一个或者都不传，如果两者都传，优先使用time_expire。
@@ -31,6 +37,20 @@ type TradeAppPayRequestParams struct {
 	DisablePayChannels  string                `json:"disable_pay_channels,omitempty"`  // 禁用渠道,用户不可用指定渠道支付，多个渠道以逗号分割 注，与enable_pay_channels互斥
 	MerchantOrderNo     string                `json:"merchant_order_no,omitempty"`     // 商户的原始订单号
 	ExtUserInfo         *ExtUserInfo          `json:"ext_user_info,omitempty"`         // 外部指定买家
+}
+
+func (t *TradeAppPayRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.NotifyUrlFiled, t.NotifyUrl)
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.app.pay")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradeAppPayRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // SignParamsParams 签约参数。
