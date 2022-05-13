@@ -203,7 +203,6 @@ func (a *AliClient) buildRequestForm(urlValues url.Values) (fromHtml string) {
 }
 
 // handlerParams 处理请求参数
-// apiName 接口名称
 // requestParams 请求的参数struct
 func (a *AliClient) handlerParams(requestParams RequestParams) (url.Values, error) {
 	// biz_content,notify_url,return_url,app_auth_token,method 这几个参数需要在调用该方法的时候就传入requestParams中
@@ -222,13 +221,6 @@ func (a *AliClient) handlerParams(requestParams RequestParams) (url.Values, erro
 		urlValues.Add("alipay_root_cert_sn", a.alipayRootCertSn)
 	}
 
-	// 获取签名
-	sign, err := a.getSign(urlValues)
-	if err != nil {
-		return urlValues, err
-	}
-	urlValues.Add(consts.SignFiled, sign)
-
 	rawBizContent := urlValues.Get(consts.BizContentFiled)
 	if requestParams.GetNeedEncrypt() && rawBizContent != "" {
 		// AES加密
@@ -236,6 +228,13 @@ func (a *AliClient) handlerParams(requestParams RequestParams) (url.Values, erro
 		urlValues.Set(consts.BizContentFiled, encryptBizContent)
 		urlValues.Add(consts.EncryptTypeField, a.encryptType)
 	}
+
+	// 获取签名
+	sign, err := a.getSign(urlValues)
+	if err != nil {
+		return urlValues, err
+	}
+	urlValues.Add(consts.SignFiled, sign)
 	return urlValues, nil
 }
 
@@ -285,9 +284,9 @@ func (a *AliClient) AsyncNotifyVerifySign(urlValues url.Values, isLifeIsNo bool)
 // 公钥证书模式说明：
 // 1.公钥证书模式下，开放平台网关的同步响应报文中，会多一个响应参数 alipay_cert_sn（支付宝公钥证书序列号），与 xxx_repsose、sign 平级，该参数表示开发者需要使用该 SN 对应的支付宝公钥证书验签。详情请参考 常见问题。
 // 2.支付宝公钥证书由于证书到期等原因，会重新签发新的证书（证书中密钥内容不变），开发者在自行实现的验签逻辑中需要判断当前使用的支付宝公钥证书 SN 与网关响应报文中的 SN 是否一致。若不一致，开发者需先调用 支付宝公钥证书下载接口 下载对应的支付宝公钥证书，再做验签。
-func (a *AliClient) SyncVerifySign(rawData, apiName string) (result bool, err error) {
+func (a *AliClient) SyncVerifySign(rawData, apiMethodName string) (result bool, err error) {
 	var resContent, signStr, alipayCertSn string
-	resContent, signStr, alipayCertSn = a.parseJSONSource(rawData, apiName)
+	resContent, signStr, alipayCertSn = a.parseJSONSource(apiMethodName, rawData)
 
 	if signStr == "" {
 		err = signDataIsEmptyErr
@@ -343,8 +342,8 @@ func (a *AliClient) SyncVerifySign(rawData, apiName string) (result bool, err er
 }
 
 // 获取未加密内容
-func (a *AliClient) parseJSONSource(apiName, responseRawData string) (resContent, sign, alipayCertSn string) {
-	rootNodeName := strings.Replace(apiName, ".", "_", -1) + consts.ResponseSuffix
+func (a *AliClient) parseJSONSource(apiMethodName, responseRawData string) (resContent, sign, alipayCertSn string) {
+	rootNodeName := strings.Replace(apiMethodName, ".", "_", -1) + consts.ResponseSuffix
 	rootIndex := strings.LastIndex(responseRawData, rootNodeName)
 	errorIndex := strings.LastIndex(responseRawData, consts.ErrorResponse)
 	if rootIndex > 0 {
@@ -389,8 +388,8 @@ func (a *AliClient) parseJSONSourceItem(responseRawData, nodeName string, nodeIn
 }
 
 // decryptJSONSignSource 解密内容
-func (a *AliClient) decryptJSONSignSource(apiName, responseRawData string) (resContent string, err error) {
-	rootNodeName := strings.Replace(apiName, ".", "_", -1) + consts.ResponseSuffix
+func (a *AliClient) decryptJSONSignSource(apiMethodName, responseRawData string) (resContent string, err error) {
+	rootNodeName := strings.Replace(apiMethodName, ".", "_", -1) + consts.ResponseSuffix
 	rootIndex := strings.LastIndex(responseRawData, rootNodeName)
 	errorIndex := strings.LastIndex(responseRawData, consts.ErrorResponse)
 	var splitStartIndex, splitEndIndex int
@@ -400,12 +399,12 @@ func (a *AliClient) decryptJSONSignSource(apiName, responseRawData string) (resC
 	} else if errorIndex > 0 {
 		splitStartIndex, splitEndIndex, encryptContent = a.parseEncryptJSONSourceItem(responseRawData, consts.ErrorResponse, errorIndex)
 	}
-	bodyIndexContent := responseRawData[:splitStartIndex]
-	bodyEndContent := responseRawData[splitEndIndex : len(responseRawData)+1-splitEndIndex]
 	bizContent, err := a.decryptContent(encryptContent)
 	if err != nil {
 		return "", err
 	}
+	bodyIndexContent := responseRawData[:splitStartIndex-1]
+	bodyEndContent := responseRawData[splitEndIndex:]
 	resContent = bodyIndexContent + bizContent + bodyEndContent
 	return
 }
@@ -461,6 +460,7 @@ func sortParams(urlValues url.Values) (strParams string) {
 func (a *AliClient) getSign(urlValues url.Values) (signStr string, err error) {
 	var strParams string
 	strParams = sortParams(urlValues)
+	fmt.Println("strParams:", strParams)
 	return utils.RSASign(strParams, a.appPrivateKey, a.signType)
 }
 

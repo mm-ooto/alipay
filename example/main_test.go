@@ -37,7 +37,7 @@ func NewAliClient() (aliClient *alipay.AliClient, err error) {
 func TestAlipayTradePrecreate(t *testing.T) {
 	req := alipay.TradePrecreateRequestParams{
 		OtherRequestParams: alipay.OtherRequestParams{
-			NeedEncrypt:  false,
+			NeedEncrypt:  true,
 			ReturnUrl:    "",
 			NotifyUrl:    "",
 			AppAuthToken: "",
