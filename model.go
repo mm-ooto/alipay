@@ -25,13 +25,6 @@ type CommonReqParams struct {
 	BizContent string `json:"biz_content,omitempty"` // 请求参数的集合，最大长度不限，除公共参数外所有请求参数都必须放在这个参数中传递，具体参照各产品快速接入文档
 }
 
-// OtherRequestParams 其它特殊的请求参数
-type OtherRequestParams struct {
-	NeedEncrypt  bool   `json:"-"` // 是否需要对内容biz_content进行加密
-	ReturnUrl    string `json:"-"`
-	NotifyUrl    string `json:"-"` // 支付宝服务器主动通知商户服务器里指定的页面http/https路径，例如：http://api.test.alipay.net/atinterface/receive_notify.htm
-	AppAuthToken string `json:"-"` // 详见应用授权概述：https://opendocs.alipay.com/isv/10467/xldcyq
-}
 
 // TradeNotificationParams 异步通知响应参数
 // 文档：https://opendocs.alipay.com/open/203/105286

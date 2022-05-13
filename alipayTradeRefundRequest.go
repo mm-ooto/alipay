@@ -1,11 +1,17 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // TradeRefundRequest 统一收单交易退款接口
 func (a *AliClient) TradeRefundRequest(requestParam TradeRefundRequestParams) (responseParam TradeRefundResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if err = a.HandlerRequest("POST", "alipay.trade.refund", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}
 	return
@@ -23,6 +29,19 @@ type TradeRefundRequestParams struct {
 	OutRequestNo            string                                `json:"out_request_no,omitempty"`            // 退款请求号。标识一次退款请求，需要保证在交易号下唯一，如需部分退款，则此参数必传。
 	RefundRoyaltyParameters []*OpenApiRoyaltyDetailInfoPojoParams `json:"refund_royalty_parameters,omitempty"` // 退分账明细信息。
 	QueryOptions            []*string                             `json:"query_options,omitempty"`             // 查询选项
+}
+
+func (t *TradeRefundRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.refund")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradeRefundRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // TradeRefundResponseParams 统一收单交易退款接口响应参数

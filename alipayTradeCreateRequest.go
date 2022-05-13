@@ -1,12 +1,18 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // TradeCreateRequest 统一收单交易创建接口
 func (a *AliClient) TradeCreateRequest(requestParam TradeCreateRequestParams) (responseParam TradeCreateResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	requestDataMap["notify_url"] = requestParam.NotifyUrl
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if err = a.HandlerRequest("POST", "alipay.trade.create", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
+	//requestDataMap["notify_url"] = requestParam.NotifyUrl
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}
 	return
@@ -37,6 +43,21 @@ type TradeCreateRequestParams struct {
 	TerminalId           string                     `json:"terminal_id,omitempty"`           // 商户机具终端编号。
 	ReceiverAddressInfo  *ReceiverAddressInfoParams `json:"receiver_address_info,omitempty"` // 收货人及地址信息
 }
+
+func (t *TradeCreateRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.NotifyUrlFiled, t.NotifyUrl)
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.create")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradeCreateRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
+}
+
 
 // TradeCreateResponseParams 统一收单交易创建接口响应参数
 type TradeCreateResponseParams struct {

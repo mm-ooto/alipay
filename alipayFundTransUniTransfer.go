@@ -1,15 +1,22 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // FundTransUniTransferRequest 单笔转账接口
 func (a *AliClient) FundTransUniTransferRequest(requestParam FundTransUniTransferRequestParams) (
 	responseParam FundTransUniTransferResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,false)
-	if err = a.HandlerRequest("POST", "alipay.fund.trans.uni.transfer",false, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
+	if err = a.HandlerRequest("POST",&requestParam, &responseParam); err != nil {
 		return
 	}
 	return
 }
+
 // FundTransUniTransferRequestParams 单笔转账接口请求参数
 // 文档地址：https://opendocs.alipay.com/open/02byuo?scene=ca56bca529e64125a2786703c6192d41
 type FundTransUniTransferRequestParams struct {
@@ -21,6 +28,18 @@ type FundTransUniTransferRequestParams struct {
 	PayeeInfo      *Participant `json:"payee_info"`       // 收款方信息
 	Remark         string       `json:"remark,omitempty"` // 业务备注。
 	BusinessParams string       `json:"business_params"`  // 转账业务请求的扩展参数，支持传入的扩展参数如下： payer_show_name_use_alias：是否展示付款方别名，可选，收款方在支付宝账单中可见。枚举支持：* true：展示别名，将展示商家支付宝在商家中心 商户信息 > 商户基本信息 页面配置的 商户别名。* false：不展示别名。默认为 false。
+}
+
+func (f *FundTransUniTransferRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.fund.trans.uni.transfer")
+	bytes, _ := json.Marshal(f)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (f *FundTransUniTransferRequestParams) GetNeedEncrypt() bool {
+	return false
 }
 
 // Participant 收款方信息

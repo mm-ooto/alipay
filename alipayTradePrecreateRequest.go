@@ -1,17 +1,21 @@
 package alipay
 
-import "github.com/mm-ooto/alipay/consts"
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
 
 // TradePrecreateRequest 统一收单线下交易预创建
 func (a *AliClient) TradePrecreateRequest(requestParam TradePrecreateRequestParams) (responseParam TradePrecreateResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["notify_url"] = requestParam.NotifyUrl
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if requestParam.NeedEncrypt {
-		requestDataMap["encrypt_type"] = consts.EncryptTypeAes
-	}
-	if err = a.HandlerRequest("POST", "alipay.trade.precreate", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
+	////requestDataMap["notify_url"] = requestParam.NotifyUrl
+	////requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	//if requestParam.NeedEncrypt {
+	//	requestDataMap["encrypt_type"] = consts.EncryptTypeAes
+	//}
+	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}
 	return
@@ -35,6 +39,20 @@ type TradePrecreateRequestParams struct {
 	OperatorId         string               `json:"operator_id,omitempty"`         // 商户操作员编号。
 	TerminalId         string               `json:"terminal_id,omitempty"`         // 商户机具终端编号。
 	MerchantOrderNo    string               `json:"merchant_order_no,omitempty"`   // 商户原始订单号，最大长度限制 32 位
+}
+
+func (t *TradePrecreateRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.NotifyUrlFiled, t.NotifyUrl)
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.precreate")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradePrecreateRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // TradePrecreateResponseParams 统一收单线下交易预创建响应参数

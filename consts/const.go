@@ -27,9 +27,9 @@ const (
 	// AlipayCertSnField 支付宝公钥证书序列号
 	AlipayCertSnField = "alipay_cert_sn"
 	// SignFiled 签名字段
-	SignFiled         = "sign"
+	SignFiled = "sign"
 	// SignTypeFiled 签名类型字段
-	SignTypeFiled     = "sign_type"
+	SignTypeFiled = "sign_type"
 	// ResponseSuffix 响应后缀
 	ResponseSuffix = "_response"
 	// ErrorResponse 错误响应
@@ -44,4 +44,19 @@ const (
 	// CertificatePrefix 证书前后缀标识
 	CertificatePrefix = "-----BEGIN CERTIFICATE-----"
 	CertificateSuffix = "-----END CERTIFICATE-----"
+)
+
+const (
+	// ReturnUrlFiled 同步跳转地址字段
+	ReturnUrlFiled = "return_url"
+	// NotifyUrlFiled 异步通知地址字段
+	NotifyUrlFiled = "notify_url"
+	// BizContentFiled 接口请求参数集合字段
+	BizContentFiled = "biz_content"
+	// AppAuthTokenFiled 获取应用授权token字段，详见应用授权概述：https://opendocs.alipay.com/isv/10467/xldcyq
+	AppAuthTokenFiled = "app_auth_token"
+	// ApiMethodNameFiled 接口名称字段
+	ApiMethodNameFiled = "method"
+	// EncryptTypeField 加密类型字段
+	EncryptTypeField = "encrypt_type"
 )

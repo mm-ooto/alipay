@@ -81,7 +81,7 @@ func TestTradePagePayRequest(t *testing.T) {
 			AppAuthToken: "",
 		},
 		OutTradeNo:  fmt.Sprintf("%d",time.Now().UnixNano()),
-		TotalAmount: "0.01",
+		TotalAmount: "100",
 		Subject:     "统一收单下单并支付页面接口",
 		ProductCode: "FAST_INSTANT_TRADE_PAY",
 	}
@@ -91,8 +91,6 @@ func TestTradePagePayRequest(t *testing.T) {
 		return
 	}
 	t.Log(urlRe)
-	bytes, _ := json.Marshal(urlRe)
-	t.Log("GET 返回值：", string(bytes))
 	t.Log("POST 返回值：", html)
 }
 

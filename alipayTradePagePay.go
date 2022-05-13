@@ -1,14 +1,18 @@
 package alipay
 
-import "net/url"
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
 
 // TradePagePayRequest 统一收单下单并支付页面接口
 func (a *AliClient) TradePagePayRequest(requestParam TradePagePayRequestParams) (result string, urlResult *url.URL, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
-	requestDataMap["notify_url"] = requestParam.NotifyUrl
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	return a.HandlerPageRequest("GET", "alipay.trade.page.pay", requestDataMap)
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
+	//requestDataMap["notify_url"] = requestParam.NotifyUrl
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	return a.HandlerPageRequest("GET", &requestParam)
 }
 
 // TradePagePayRequestParams 统一收单下单并支付页面接口请求参数
@@ -41,6 +45,21 @@ type TradePagePayRequestParams struct {
 	MerchantOrderNo     string               `json:"merchant_order_no,omitempty"`     // 商户的原始订单号
 	ExtUserInfo         *ExtUserInfo         `json:"ext_user_info,omitempty"`         // 外部指定买家
 	InvoiceInfo         *InvoiceInfo         `json:"invoice_info,omitempty"`          // 开票信息
+}
+
+func (t *TradePagePayRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.ReturnUrlFiled, t.ReturnUrl)
+	urlValue.Add(consts.NotifyUrlFiled, t.NotifyUrl)
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.page.pay")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradePagePayRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // RoyaltyInfo 分账信息

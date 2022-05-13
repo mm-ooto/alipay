@@ -1,13 +1,19 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // TradeFastpayRefundQueryRequest 统一收单交易退款查询
 func (a *AliClient) TradeFastpayRefundQueryRequest(requestParam TradeFastpayRefundQueryRequestParams) (
 	responseParam TradeFastpayRefundQueryResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	requestDataMap["notify_url"] = requestParam.NotifyUrl
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if err = a.HandlerRequest("POST", "alipay.trade.fastpay.refund.query", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
+	//requestDataMap["notify_url"] = requestParam.NotifyUrl
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	if err = a.HandlerRequest("POST",&requestParam, &responseParam); err != nil {
 		return
 	}
 	return
@@ -22,6 +28,19 @@ type TradeFastpayRefundQueryRequestParams struct {
 	OutTradeNo   string    `json:"out_trade_no,omitempty"`  // 商户订单号。 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
 	OutRequestNo string    `json:"out_request_no"`          // 退款请求号。 请求退款接口时，传入的退款请求号，如果在退款请求时未传入，则该值为创建交易时的商户订单号。
 	QueryOptions []*string `json:"query_options,omitempty"` // 查询选项
+}
+
+func (t *TradeFastpayRefundQueryRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.fastpay.refund.query")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradeFastpayRefundQueryRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // TradeFastpayRefundQueryResponseParams 统一收单交易退款查询响应参数

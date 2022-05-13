@@ -1,12 +1,18 @@
 package alipay
 
+import (
+	"encoding/json"
+	"github.com/mm-ooto/alipay/consts"
+	"net/url"
+)
+
 // TradeCancel 统一收单交易撤销接口
 func (a *AliClient) TradeCancel(requestParam TradeCancelRequestParams) (responseParam TradeCancelResponseParams, err error) {
-	requestDataMap := make(map[string]interface{})
-	requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	requestDataMap["notify_url"] = requestParam.NotifyUrl
-	requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	if err = a.HandlerRequest("POST", "alipay.trade.cancel", requestParam.NeedEncrypt, requestDataMap, &responseParam); err != nil {
+	//requestDataMap := make(map[string]interface{})
+	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
+	//requestDataMap["notify_url"] = requestParam.NotifyUrl
+	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
+	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}
 	return
@@ -19,6 +25,19 @@ type TradeCancelRequestParams struct {
 
 	OutTradeNo string `json:"out_trade_no,omitempty"` // 原支付请求的商户订单号,和支付宝交易号不能同时为空
 	TradeNo    string `json:"trade_no,omitempty"`     // 支付宝交易号，和商户订单号不能同时为空
+}
+
+func (t *TradeCancelRequestParams) GetOtherParams() url.Values {
+	urlValue := url.Values{}
+	urlValue.Add(consts.AppAuthTokenFiled, t.AppAuthToken)
+	urlValue.Add(consts.ApiMethodNameFiled, "alipay.trade.cancel")
+	bytes, _ := json.Marshal(t)
+	urlValue.Add(consts.BizContentFiled, string(bytes))
+	return urlValue
+}
+
+func (t *TradeCancelRequestParams) GetNeedEncrypt() bool {
+	return t.NeedEncrypt == true
 }
 
 // TradeCancelResponseParams 统一收单交易撤销接口响应参数
