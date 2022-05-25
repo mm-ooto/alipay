@@ -9,9 +9,6 @@ import (
 // TradeDataserviceBillDownloadurlQuery 查询对账单下载地址
 func (a *AliClient) TradeDataserviceBillDownloadurlQuery(requestParam TradeDataserviceBillDownloadURLQueryRequestParams) (
 	responseParam TradeDataserviceBillDownloadURLQueryResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

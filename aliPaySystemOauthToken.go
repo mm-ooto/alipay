@@ -8,8 +8,6 @@ import (
 // SystemOauthTokenRequest 换取授权访问令牌
 func (a *AliClient) SystemOauthTokenRequest(requestParam SystemOauthTokenRequestParams) (
 	responseParam SystemOauthTokenResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam,false)
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

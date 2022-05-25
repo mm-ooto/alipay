@@ -8,9 +8,6 @@ import (
 
 // TradeQueryRequest 统一收单线下交易查询
 func (a *AliClient) TradeQueryRequest(requestParam TradeQueryRequestParams) (responseParam TradeQueryResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

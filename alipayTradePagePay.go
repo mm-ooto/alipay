@@ -8,10 +8,6 @@ import (
 
 // TradePagePayRequest 统一收单下单并支付页面接口
 func (a *AliClient) TradePagePayRequest(requestParam TradePagePayRequestParams) (result string, urlResult *url.URL, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
-	//requestDataMap["notify_url"] = requestParam.NotifyUrl
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	return a.HandlerPageRequest("GET", &requestParam)
 }
 

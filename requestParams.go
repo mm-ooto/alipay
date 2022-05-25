@@ -3,7 +3,7 @@ package alipay
 import "net/url"
 
 type RequestParams interface {
-	// GetOtherParams 获取非公共参数,具体如下：returnUrl,notifyUrl,appAuthToken,apiMethodName,bizContent
+	// GetOtherParams 除公共参数以外的其它请求参数,如：returnUrl,notifyUrl,appAuthToken,apiMethodName,bizContent
 	GetOtherParams() url.Values
 	// GetNeedEncrypt 是否需要对biz_content内容加密，加密算法为AES
 	GetNeedEncrypt() bool

@@ -8,10 +8,6 @@ import (
 
 // TradeClose 统一收单交易关闭接口
 func (a *AliClient) TradeClose(requestParam TradeCloseRequestParams) (responseParam TradeCloseResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["notify_url"] = requestParam.NotifyUrl
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

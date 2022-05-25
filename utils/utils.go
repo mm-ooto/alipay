@@ -88,9 +88,9 @@ func RSAVerify(data string, rsaPublicKey *rsa.PublicKey, signData string, rsaTyp
 	return rsa.VerifyPKCS1v15(rsaPublicKey, hashP, hash.Sum(nil), sign)
 }
 
-// GetPemPublic 将公钥字符串转换为RSA公钥格式
+// GetPemPublic 将公钥字符串转换为公钥格式
 func GetPemPublic(rawPublicKey string) string {
-	publicPemStr := "-----BEGIN PUBLIC KEY-----\n"
+	publicPemStr := consts.PublicKeyPrefix + "\n"
 	strLen := len(rawPublicKey)
 	for i := 0; i < strLen; i += 64 {
 		if i+64 >= strLen {
@@ -99,13 +99,13 @@ func GetPemPublic(rawPublicKey string) string {
 			publicPemStr += rawPublicKey[i:i+64] + "\n"
 		}
 	}
-	publicPemStr += "-----END PUBLIC KEY-----"
+	publicPemStr += consts.PublicKeySuffix
 	return publicPemStr
 }
 
 // GetPemPrivate 将私钥字符串转换为RSA私钥格式
 func GetPemPrivate(rawPrivateKey string) string {
-	privatePemStr := "-----BEGIN RSA PRIVATE KEY-----\n"
+	privatePemStr := consts.RSAPrivatePrefix + "\n"
 	strLen := len(rawPrivateKey)
 	for i := 0; i < strLen; i += 64 {
 		if i+64 >= strLen {
@@ -114,7 +114,7 @@ func GetPemPrivate(rawPrivateKey string) string {
 			privatePemStr += rawPrivateKey[i:i+64] + "\n"
 		}
 	}
-	privatePemStr += "-----END RSA PRIVATE KEY-----"
+	privatePemStr += consts.RSAPrivateSuffix
 	return privatePemStr
 }
 

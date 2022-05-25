@@ -8,10 +8,6 @@ import (
 
 // TradeCreateRequest 统一收单交易创建接口
 func (a *AliClient) TradeCreateRequest(requestParam TradeCreateRequestParams) (responseParam TradeCreateResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["notify_url"] = requestParam.NotifyUrl
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

@@ -8,13 +8,6 @@ import (
 
 // TradePrecreateRequest 统一收单线下交易预创建
 func (a *AliClient) TradePrecreateRequest(requestParam TradePrecreateRequestParams) (responseParam TradePrecreateResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	////requestDataMap["notify_url"] = requestParam.NotifyUrl
-	////requestDataMap["app_auth_token"] = requestParam.AppAuthToken
-	//if requestParam.NeedEncrypt {
-	//	requestDataMap["encrypt_type"] = consts.EncryptTypeAes
-	//}
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

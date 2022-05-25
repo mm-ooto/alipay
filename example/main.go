@@ -23,6 +23,7 @@ func init() {
 
 func main() {
 	router := gin.Default()
+	// 异步通知回调示例：
 	router.POST("/notify", func(c *gin.Context) {
 		// 从http body中读取参数字符串
 		body, err := c.GetRawData()
@@ -38,5 +39,5 @@ func main() {
 		}
 		c.String(200, "success") // 输出success是表示消息获取成功，支付宝就会停止发送异步
 	})
-	router.Run("192.168.10.254:7888")
+	router.Run("127.0.0.1:7888")
 }
