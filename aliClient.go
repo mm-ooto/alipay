@@ -141,7 +141,7 @@ func (a *AliClient) HandlerRequest(httpMethod string, requestParams RequestParam
 		return
 	}
 
-	// todo 对内容解密，这一块有问题
+	// 对内容解密，这一块有问题
 	if requestParams.GetNeedEncrypt() {
 		resContent, err = a.decryptJSONSignSource(apiMethodName, resContent)
 		if err != nil {
@@ -460,7 +460,6 @@ func sortParams(urlValues url.Values) (strParams string) {
 func (a *AliClient) getSign(urlValues url.Values) (signStr string, err error) {
 	var strParams string
 	strParams = sortParams(urlValues)
-	fmt.Println("strParams:", strParams)
 	return utils.RSASign(strParams, a.appPrivateKey, a.signType)
 }
 
@@ -496,7 +495,6 @@ func (a *AliClient) SetDataToBizContent(structData interface{}, needEncrypt bool
 		return ""
 	}
 	bodyStr, _ := json.Marshal(structData)
-	// todo 内容加密/解密这一块没有调试通================
 	// 是否对biz_content内容进行加密，
 	if needEncrypt {
 		encryptContent, _ := a.encryptContent(string(bodyStr))

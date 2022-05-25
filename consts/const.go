@@ -44,6 +44,14 @@ const (
 	// CertificatePrefix 证书前后缀标识
 	CertificatePrefix = "-----BEGIN CERTIFICATE-----"
 	CertificateSuffix = "-----END CERTIFICATE-----"
+
+	// RSAPrivatePrefix rsa私钥前后缀标识
+	RSAPrivatePrefix = "-----BEGIN RSA PRIVATE KEY-----"
+	RSAPrivateSuffix = "-----END RSA PRIVATE KEY-----"
+
+	// PublicKeyPrefix 公钥前后缀标识
+	PublicKeyPrefix = "-----BEGIN PUBLIC KEY-----"
+	PublicKeySuffix = "-----END PUBLIC KEY-----"
 )
 
 const (

@@ -8,9 +8,6 @@ import (
 
 // TradeRefundRequest 统一收单交易退款接口
 func (a *AliClient) TradeRefundRequest(requestParam TradeRefundRequestParams) (responseParam TradeRefundResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

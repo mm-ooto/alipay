@@ -9,8 +9,6 @@ import (
 // OpenAuthTokenAppRequest 换取应用授权令牌
 func (a *AliClient) OpenAuthTokenAppRequest(requestParam OpenAuthTokenAppRequestParams) (
 	responseParam OpenAuthTokenAppResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

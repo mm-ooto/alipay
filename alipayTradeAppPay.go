@@ -8,9 +8,6 @@ import (
 
 // TradeAppPayRequest app支付接口2.0
 func (a *AliClient) TradeAppPayRequest(requestParam TradeAppPayRequestParams) (result string, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	return a.HandlerSDKRequest(&requestParam)
 }
 

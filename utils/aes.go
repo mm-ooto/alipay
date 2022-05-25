@@ -55,7 +55,10 @@ func AesCBCEncrypt(plaintext string, secretKey []byte) (string, error) {
 	}
 	blockSize := block.BlockSize()
 	plaintextPad := PKCS7Padding([]byte(plaintext), blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, secretKey[:blockSize])
+	//iv:=secretKey[:blockSize]
+	// 设置全0的IV
+	iv := bytes.Repeat([]byte{byte(0)}, 16)
+	blockMode := cipher.NewCBCEncrypter(block, iv)
 	ciphertext := make([]byte, len(plaintextPad))
 	blockMode.CryptBlocks(ciphertext, plaintextPad)
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
@@ -70,8 +73,11 @@ func AesCBCDecrypt(ciphertext string, secretKey []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, secretKey[:blockSize])
+	//blockSize := block.BlockSize()
+	//iv:=secretKey[:blockSize]
+	// 设置全0的IV
+	iv := bytes.Repeat([]byte{byte(0)}, 16)
+	blockMode := cipher.NewCBCDecrypter(block, iv)
 	origData := make([]byte, len(decodeData))
 	blockMode.CryptBlocks(origData, decodeData)
 	origData = PKCS7UnPadding(origData)

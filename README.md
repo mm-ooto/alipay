@@ -34,7 +34,7 @@ func TestName(t *testing.T) {
 
 ## 示例
 ```go
-func TestName(t *testing.T) {
+func TestTradePagePay(t *testing.T) {
     aliClient, err := alipay.NewAliClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
         if err != nil {
         fmt.Printf("NewAliClient error:%s\n", err.Error())
@@ -70,7 +70,9 @@ func TestName(t *testing.T) {
 ```
 ### 异步通知示例
 ```go
+func main() {
     router := gin.Default()
+    // 异步通知回调示例：
 	router.POST("/notify", func(c *gin.Context) {
 		// 从http body中读取参数字符串
 		body, err := c.GetRawData()
@@ -87,6 +89,7 @@ func TestName(t *testing.T) {
 		c.String(200, "success") // 输出success是表示消息获取成功，支付宝就会停止发送异步
 	})
 	router.Run(":8080")
+}
 ```
 
 

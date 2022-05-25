@@ -9,8 +9,6 @@ import (
 // OpenAppAlipaycertDownloadRequest 应用支付宝公钥证书下载
 func (a *AliClient) OpenAppAlipaycertDownloadRequest(requestParam OpenAppAlipaycertDownloadRequestParams) (
 	responseParam OpenAppAlipaycertDownloadResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}

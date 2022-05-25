@@ -9,8 +9,6 @@ import (
 // FundTransUniTransferRequest 单笔转账接口
 func (a *AliClient) FundTransUniTransferRequest(requestParam FundTransUniTransferRequestParams) (
 	responseParam FundTransUniTransferResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, false)
 	if err = a.HandlerRequest("POST",&requestParam, &responseParam); err != nil {
 		return
 	}

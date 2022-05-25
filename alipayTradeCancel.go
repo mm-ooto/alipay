@@ -8,10 +8,6 @@ import (
 
 // TradeCancel 统一收单交易撤销接口
 func (a *AliClient) TradeCancel(requestParam TradeCancelRequestParams) (responseParam TradeCancelResponseParams, err error) {
-	//requestDataMap := make(map[string]interface{})
-	//requestDataMap["biz_content"] = a.SetDataToBizContent(requestParam, requestParam.NeedEncrypt)
-	//requestDataMap["notify_url"] = requestParam.NotifyUrl
-	//requestDataMap["app_auth_token"] = requestParam.AppAuthToken
 	if err = a.HandlerRequest("POST", &requestParam, &responseParam); err != nil {
 		return
 	}
