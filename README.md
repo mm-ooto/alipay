@@ -10,15 +10,15 @@
 `AppId`、`应用的私钥`、`应用的公钥`、`支付宝公钥`
 
 ## 使用步骤：
-1. 创建一个AliClient实例
-2. 设置request参数并发起API请求，方法（AliClient.HandlerRequest）
+1. 创建一个Client实例
+2. 设置request参数并发起API请求，方法（Client.HandlerRequest）
 
 ## 初始化
 ```go
 func TestName(t *testing.T) {
-    aliClient, err := alipay.NewAliClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
+    aliClient, err := alipay.NewClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
         if err != nil {
-        fmt.Printf("NewAliClient error:%s\n", err.Error())
+        fmt.Printf("NewClient error:%s\n", err.Error())
         return
     }
     return
@@ -32,12 +32,12 @@ func TestName(t *testing.T) {
     aliClient.LoadAlipayRootCertSn("certRootPath","certRootContent")// 加载支付宝根证书序列号SN
 ```
 
-## 示例
+## 参考示例
 ```go
 func TestTradePagePay(t *testing.T) {
-    aliClient, err := alipay.NewAliClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
+    aliClient, err := alipay.NewClient(appId, aliPublicKey, appPrivateKey, "RSA2", false)
         if err != nil {
-        fmt.Printf("NewAliClient error:%s\n", err.Error())
+        fmt.Printf("NewClient error:%s\n", err.Error())
         return
     }
     req := alipay.TradePagePayRequestParams{
@@ -52,7 +52,7 @@ func TestTradePagePay(t *testing.T) {
             TotalAmount: "0.01",
             Subject:     "统一收单下单并支付页面接口",
     }
-    _, urlRe, err := aliClient.TradePagePayRequest(req)
+    _, urlRe, err := aliClient.TradePagePay(req)
     if err != nil {
         t.Log(err)
         return
@@ -63,10 +63,13 @@ func TestTradePagePay(t *testing.T) {
 }
 ```
 
+
+
+
 ## 异步通知
 ### 异步通知方法
 ```go
-    aliClient.HandlerAsyncNotify(rawBody, isLifeIsNo) // 具体参数含义查看方法说明
+    aliClient.AsyncNotify(rawBody, isLifeNotify) // 具体参数含义查看方法说明
 ```
 ### 异步通知示例
 ```go
@@ -82,7 +85,7 @@ func main() {
 			return
 		}
 		fmt.Printf("rawBody：%s", string(body))
-		if _, err = aliClient2.HandlerAsyncNotify(string(body), false); err != nil {
+		if _, err = aliClient2.AsyncNotify(string(body)); err != nil {
 			c.String(http.StatusInternalServerError, "fail") // 输出fail，表示消息获取失败，支付宝会重新发送消息到异步地址
 			return
 		}
@@ -93,7 +96,26 @@ func main() {
 ```
 
 
-### 参考文档：
+
+## 目前已实现的接口
+* 换取应用授权令牌：alipay.AuthTokenApp()
+* 换取授权访问令牌：alipay.SystemOauthToken()
+* app支付接口2.0：
+* 统一收单下单并支付页面：alipya.TradePagePay()
+* 统一收单交易创建：alipay.TradeCreate()
+* 统一收单交易撤销：alipay.TradeCancel()
+* 统一收单交易关闭：alipay.TradeClose()
+* 统一收单交易退款查询：alipay.TradeFastPayRefundQuery()
+* 统一收单线下交易预创建：alipay.TradePreCreate()
+* 统一收单线下交易查询：alipay.TradeQuery()
+* 统一收单交易退款：alipay.TradeRefund()
+* 应用支付宝公钥证书下载：alipay.AppAliPayCertDownload()
+* 单笔转账：alipay.FundTransUniTransfer()
+* 查询对账单下载地址：alipay.TradeBillDownloadUrlQuery()
+* 处理异步通知回调：alipay.AsyncNotify()
+
+
+## 参考文档：
 * 沙箱账号：https://open.alipay.com/develop/sandbox/account
 * 数据签名和验签：https://opendocs.alipay.com/common/02kf5q ；  https://opendocs.alipay.com/common/02mse2
 * 支付API文档：https://opendocs.alipay.com/apis

@@ -1,4 +1,4 @@
-module github.com/mm-ooto/alipay
+module alipay
 
 go 1.17
 

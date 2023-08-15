@@ -1,4 +1,4 @@
-package consts
+package alipay
 
 const (
 	// SignTypeRSA 商户生成签名字符串所使用的签名算法类型，目前支持RSA2和RSA，推荐使用RSA2
@@ -22,7 +22,7 @@ const (
 	// GateWalSandboxUrl (沙盒环境) 支付宝接口地址
 	GateWalSandboxUrl = "https://openapi.alipaydev.com/gateway.do"
 
-	ContentType = "application/x-www-form-urlencoded;charset=utf-8"
+	ContentTypeFromUrlEncoded = "application/x-www-form-urlencoded;charset=utf-8"
 
 	// AlipayCertSnField 支付宝公钥证书序列号
 	AlipayCertSnField = "alipay_cert_sn"

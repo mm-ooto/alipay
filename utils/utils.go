@@ -9,8 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
-	"github.com/mm-ooto/alipay/consts"
-	"io/ioutil"
+	"os"
 )
 
 // ParsePKCS1PrivateKey 解析私钥
@@ -90,7 +89,7 @@ func RSAVerify(data string, rsaPublicKey *rsa.PublicKey, signData string, rsaTyp
 
 // GetPemPublic 将公钥字符串转换为公钥格式
 func GetPemPublic(rawPublicKey string) string {
-	publicPemStr := consts.PublicKeyPrefix + "\n"
+	publicPemStr := "-----BEGIN PUBLIC KEY-----\n"
 	strLen := len(rawPublicKey)
 	for i := 0; i < strLen; i += 64 {
 		if i+64 >= strLen {
@@ -99,13 +98,13 @@ func GetPemPublic(rawPublicKey string) string {
 			publicPemStr += rawPublicKey[i:i+64] + "\n"
 		}
 	}
-	publicPemStr += consts.PublicKeySuffix
+	publicPemStr += "-----END PUBLIC KEY-----"
 	return publicPemStr
 }
 
 // GetPemPrivate 将私钥字符串转换为RSA私钥格式
 func GetPemPrivate(rawPrivateKey string) string {
-	privatePemStr := consts.RSAPrivatePrefix + "\n"
+	privatePemStr := "-----BEGIN RSA PRIVATE KEY-----\n"
 	strLen := len(rawPrivateKey)
 	for i := 0; i < strLen; i += 64 {
 		if i+64 >= strLen {
@@ -114,13 +113,13 @@ func GetPemPrivate(rawPrivateKey string) string {
 			privatePemStr += rawPrivateKey[i:i+64] + "\n"
 		}
 	}
-	privatePemStr += consts.RSAPrivateSuffix
+	privatePemStr += "-----END RSA PRIVATE KEY-----"
 	return privatePemStr
 }
 
 // GetPemCert 将证书字符串转换为Cert证书格式
 func GetPemCert(rawCert string) string {
-	certPemStr := consts.CertificatePrefix + "\n"
+	certPemStr := "-----BEGIN CERTIFICATE-----\n"
 	strLen := len(rawCert)
 	for i := 0; i < strLen; i += 76 {
 		if i+76 >= strLen {
@@ -129,14 +128,14 @@ func GetPemCert(rawCert string) string {
 			certPemStr += rawCert[i:i+76] + "\n"
 		}
 	}
-	certPemStr += consts.CertificateSuffix
+	certPemStr += "-----END CERTIFICATE-----"
 	return certPemStr
 }
 
 // GetPublicKeyFromCertPath 从证书中提取公钥
 // certPath 证书文件路径
 func GetPublicKeyFromCertPath(certPath string) (publicKey *rsa.PublicKey, x509Cert *x509.Certificate, err error) {
-	certPEMBlock, err := ioutil.ReadFile(certPath)
+	certPEMBlock, err := os.ReadFile(certPath)
 	if err != nil {
 		return
 	}
